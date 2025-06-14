@@ -8,7 +8,7 @@ import {
   ListToolsRequestSchema,
   ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { Database } from './database/index.js';
+
 import { DatabaseConfig, Tool, DatabaseResource } from './types/index.js';
 import { isSelectQuery, isModificationQuery } from './utils/helpers.js';
 import fs from 'fs';

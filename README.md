@@ -19,8 +19,8 @@ Un servidor MCP (Model Context Protocol) que proporciona capacidades de acceso a
 
 1. Clonar el repositorio:
 ```bash
-git clone https://github.com/tu-usuario/db-connect.git
-cd db-connect
+git clone https://github.com/caagudelo/mcp-db-connect.git
+cd mcp-db-connect
 ```
 
 2. Instalar dependencias:
