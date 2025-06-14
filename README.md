@@ -1,4 +1,4 @@
-# DB-Connect
+# mcp-db-connect
 
 Un servidor MCP (Model Context Protocol) que proporciona capacidades de acceso a bases de datos para Claude, soportando SQLite, SQL Server, PostgreSQL y MySQL.
 
@@ -82,7 +82,7 @@ A partir de la versión actual, el proyecto utiliza la librería [`minimist`](ht
 
 ## Configuración del MCP en el Editor
 
-Para configurar DB-Connect en tu editor, edita el archivo de configuración de Claude Desktop. Ejemplo moderno para MySQL:
+Para configurar mcp-db-connect en tu editor, edita el archivo de configuración de Claude Desktop. Ejemplo moderno para MySQL:
 
 ```json
 {
@@ -90,7 +90,7 @@ Para configurar DB-Connect en tu editor, edita el archivo de configuración de C
     "mysql": {
       "command": "node",
       "args": [
-        "/ruta/absoluta/a/db-connect/dist/index.js",
+        "/ruta/absoluta/a/mcp-db-connect/dist/index.js",
         "--mysql",
         "--host", "<host_mysql>",
         "--database", "<nombre_base_datos>",
@@ -102,7 +102,7 @@ Para configurar DB-Connect en tu editor, edita el archivo de configuración de C
     "sqlserver": {
       "command": "node",
       "args": [
-        "/ruta/absoluta/a/db-connect/dist/index.js",
+        "/ruta/absoluta/a/mcp-db-connect/dist/index.js",
         "--sqlserver",
         "--host", "<host_sqlserver>",
         "--database", "<nombre_base_datos>",
@@ -115,7 +115,7 @@ Para configurar DB-Connect en tu editor, edita el archivo de configuración de C
     "postgresql": {
       "command": "node",
       "args": [
-        "/ruta/absoluta/a/db-connect/dist/index.js",
+        "/ruta/absoluta/a/mcp-db-connect/dist/index.js",
         "--postgresql",
         "--host", "<host_postgres>",
         "--database", "<nombre_base_datos>",
@@ -128,7 +128,7 @@ Para configurar DB-Connect en tu editor, edita el archivo de configuración de C
     "sqlite": {
       "command": "node",
       "args": [
-        "/ruta/absoluta/a/db-connect/dist/index.js",
+        "/ruta/absoluta/a/mcp-db-connect/dist/index.js",
         "--sqlite",
         "--path", "/ruta/a/tu/base.db"
       ]
@@ -192,7 +192,7 @@ npm install -g @cagudelo/mcp-db-connect
 Configura tu editor para usar el comando directamente:
 
 ```json
-"mysqlCityLocal": {
+"mysql": {
   "command": "mcp-db-connect",
   "args": [
     "--mysql",
@@ -210,7 +210,7 @@ Configura tu editor para usar el comando directamente:
 Puedes ejecutar el CLI directamente con npx:
 
 ```json
-"mysqlCityLocal": {
+"mysql": {
   "command": "npx",
   "args": [
     "@cagudelo/mcp-db-connect",
@@ -224,24 +224,6 @@ Puedes ejecutar el CLI directamente con npx:
 }
 ```
 
-### Opción 3: Usar la ruta directa al archivo (desarrollo local)
-
-Puedes seguir usando la ruta al archivo compilado si prefieres no instalar el paquete:
-
-```json
-"mysqlCityLocal": {
-  "command": "node",
-  "args": [
-    "E:/ruta/a/db-connect/dist/index.js",
-    "--mysql",
-    "--host", "<host_mysql>",
-    "--database", "<nombre_base_datos>",
-    "--port", "<puerto>",
-    "--user", "<usuario>",
-    "--password", "<contraseña>"
-  ]
-}
-```
 
 ### Recomendaciones
 
