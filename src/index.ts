@@ -27,7 +27,7 @@ import minimist from 'minimist';
 
 // Configurar el sistema de logs
 const logFile = path.join(process.cwd(), 'server.log');
-console.log('Iniciando servidor. Los logs se guardarán en:', logFile);
+
 
 const logStream = fs.createWriteStream(logFile, { flags: 'a' });
 
@@ -118,7 +118,7 @@ if (args.mysql) {
     host: args.host,
     database: args.database,
     user: args.user,
-    password: args.password,
+    password: String(args.password),
     port: parseInt(args.port),
     ssl: args.ssl === 'true'
   };
@@ -128,7 +128,7 @@ if (args.mysql) {
     server: args.host,
     database: args.database,
     user: args.user,
-    password: args.password,
+    password: String(args.password),
     port: parseInt(args.port),
     trustServerCertificate: args.trustServerCertificate === 'true'
   };
@@ -138,7 +138,7 @@ if (args.mysql) {
     host: args.host,
     database: args.database,
     user: args.user,
-    password: args.password,
+    password: String(args.password),
     port: parseInt(args.port),
     ssl: args.ssl === 'true'
   };
