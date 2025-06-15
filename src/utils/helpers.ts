@@ -52,7 +52,12 @@ export function createErrorResult(error: string): QueryResult {
  */
 export function isSelectQuery(query: string): boolean {
   const normalizedQuery = query.trim().toLowerCase();
-  return normalizedQuery.startsWith('select');
+  return (
+    normalizedQuery.startsWith('select') ||
+    normalizedQuery.startsWith('exec') ||
+    normalizedQuery.startsWith('call') ||
+    normalizedQuery.startsWith('sp_')
+  );
 }
 
 /**

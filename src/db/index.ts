@@ -46,3 +46,8 @@ export function getDescribeTableQuery(tableName: string): string {
   if (!dbAdapter) throw new Error("Database not initialized");
   return dbAdapter.getDescribeTableQuery(tableName);
 } 
+
+export function getListProceduresQuery(): string {
+  if (!dbAdapter) throw new Error("Database not initialized");
+  return dbAdapter.getListProceduresQuery();
+}

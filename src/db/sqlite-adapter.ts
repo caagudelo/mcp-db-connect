@@ -66,6 +66,10 @@ export class SqliteAdapter implements DbAdapter {
     return "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'";
   }
 
+  getListProceduresQuery(): string {
+    throw new Error("Procedures not supported in this database engine");
+  }
+
   getDescribeTableQuery(tableName: string): string {
     return `PRAGMA table_info(${tableName})`;
   }

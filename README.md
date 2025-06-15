@@ -201,7 +201,11 @@ Para configurar mcp-db-connect en tu editor, edita el archivo de configuración 
 | `drop_table` | Eliminar tablas | `table_name`: Nombre de la tabla<br>`confirm`: Bandera de seguridad |
 | `export_query` | Exportar resultados | `query`: Consulta SQL SELECT<br>`format`: "csv" o "json" |
 | `list_tables` | Listar todas las tablas | Ninguno |
+| `list_procedures` | Listar todos los procedimientos almacenados | Ninguno |
 | `describe_table` | Ver esquema de una tabla | `table_name`: Nombre de la tabla |
+
+
+> **Nota:** Si el motor de base de datos no soporta procedimientos almacenados, la herramienta puede devolver una lista vacía o un mensaje de error.
 
 ## Desarrollo
 

@@ -86,7 +86,40 @@ export class PostgresqlAdapter implements DbAdapter {
     return "SELECT table_name as name FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name";
   }
 
+  getListProceduresQuery(): string {
+    return `
+      SELECT 
+        n.nspname as schema_name,
+        p.proname as procedure_name,
+        p.prosrc as source_code
+      FROM pg_proc p
+      JOIN pg_namespace n ON p.pronamespace = n.oid
+      WHERE p.prokind = 'p'
+      ORDER BY n.nspname, p.proname
+    `;
+  }
+
   getDescribeTableQuery(tableName: string): string {
-    return `SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '${tableName}'`;
+    return `
+      SELECT 
+        c.column_name as name,
+        c.data_type as type,
+        CASE WHEN c.is_nullable = 'NO' THEN 1 ELSE 0 END as notnull,
+        CASE WHEN pk.constraint_name IS NOT NULL THEN 1 ELSE 0 END as pk,
+        c.column_default as dflt_value
+      FROM 
+        information_schema.columns c
+      LEFT JOIN 
+        information_schema.key_column_usage kcu 
+        ON c.table_name = kcu.table_name AND c.column_name = kcu.column_name
+      LEFT JOIN 
+        information_schema.table_constraints pk 
+        ON kcu.constraint_name = pk.constraint_name AND pk.constraint_type = 'PRIMARY KEY'
+      WHERE 
+        c.table_name = '${tableName}'
+        AND c.table_schema = 'public'
+      ORDER BY 
+        c.ordinal_position
+    `;
   }
 } 

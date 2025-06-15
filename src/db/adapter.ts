@@ -7,6 +7,7 @@ export interface DbAdapter {
   getMetadata(): { name: string, type: string, path?: string, server?: string, database?: string };
   getListTablesQuery(): string;
   getDescribeTableQuery(tableName: string): string;
+  getListProceduresQuery(): string;
 }
 
 // Importa los adaptadores (se crearán en los siguientes archivos)

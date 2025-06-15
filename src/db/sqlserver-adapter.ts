@@ -88,7 +88,37 @@ export class SqlServerAdapter implements DbAdapter {
     return "SELECT TABLE_NAME as name FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' ORDER BY TABLE_NAME";
   }
 
+  getListProceduresQuery(): string {
+    return `
+    SELECT 
+    s.name AS schema_name,
+    p.name AS procedure_name,
+    p.create_date,
+    p.modify_date
+    FROM sys.procedures p
+    JOIN sys.schemas s ON p.schema_id = s.schema_id
+    ORDER BY s.name, p.name
+    `;
+  }
+
   getDescribeTableQuery(tableName: string): string {
-    return `SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '${tableName}'`;
+    return `
+    SELECT 
+        c.COLUMN_NAME as name,
+        c.DATA_TYPE as type,
+        CASE WHEN c.IS_NULLABLE = 'YES' THEN 1 ELSE 0 END as notnull,
+        CASE WHEN pk.CONSTRAINT_TYPE = 'PRIMARY KEY' THEN 1 ELSE 0 END as pk,
+        c.COLUMN_DEFAULT as dflt_value
+      FROM 
+        INFORMATION_SCHEMA.COLUMNS c
+      LEFT JOIN 
+        INFORMATION_SCHEMA.KEY_COLUMN_USAGE kcu ON c.TABLE_NAME = kcu.TABLE_NAME AND c.COLUMN_NAME = kcu.COLUMN_NAME
+      LEFT JOIN 
+        INFORMATION_SCHEMA.TABLE_CONSTRAINTS pk ON kcu.CONSTRAINT_NAME = pk.CONSTRAINT_NAME AND pk.CONSTRAINT_TYPE = 'PRIMARY KEY'
+      WHERE 
+        c.TABLE_NAME = '${tableName}'
+      ORDER BY 
+        c.ORDINAL_POSITION
+    `;
   }
 } 

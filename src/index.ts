@@ -32,6 +32,7 @@ import {
   dbExec,
   getListTablesQuery,
   getDescribeTableQuery,
+  getListProceduresQuery,
   closeDatabase,
   getDatabaseMetadata
 } from './db/index.js';
@@ -313,6 +314,15 @@ async function runServer() {
           }
         },
         {
+          name: "list_procedures",
+          description: "Obtener una lista de todos los procedimientos almacenados en la base de datos",
+          parameters: {
+            type: "object",
+            properties: {},
+            required: []
+          }
+        },
+        {
           name: "describe_table",
           description: "Ver información del esquema de una tabla específica",
           parameters: {
@@ -435,9 +445,17 @@ async function runServer() {
             };
           }
 
+          case "list_procedures": {
+            const result = await dbAll(getListProceduresQuery());
+            return {
+              content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+              isError: false,
+            };
+          }
           case "describe_table": {
             const tableName = args.table_name as string;
-            const result = await dbAll(`PRAGMA table_info("${tableName}")`);
+            const query = getDescribeTableQuery(tableName);
+            const result = await dbAll(query);
             return {
               content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
               isError: false,

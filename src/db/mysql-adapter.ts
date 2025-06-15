@@ -75,6 +75,19 @@ export class MysqlAdapter implements DbAdapter {
     return "SHOW TABLES";
   }
 
+  getListProceduresQuery(): string {
+    return `
+      SELECT 
+        ROUTINE_SCHEMA as schema_name,
+        ROUTINE_NAME as procedure_name,
+        CREATED as create_date,
+        LAST_ALTERED as modify_date
+      FROM INFORMATION_SCHEMA.ROUTINES
+      WHERE ROUTINE_TYPE = 'PROCEDURE'
+      ORDER BY ROUTINE_SCHEMA, ROUTINE_NAME
+    `;
+  }
+
   getDescribeTableQuery(tableName: string) {
     return `DESCRIBE \`${tableName}\``;
   }
