@@ -8,6 +8,11 @@ export interface DbAdapter {
   getListTablesQuery(): string;
   getDescribeTableQuery(tableName: string): string;
   getListProceduresQuery(): string;
+  getListViewsQuery(): string;
+  getDescribeViewQuery(viewName: string): string;
+  getListIndexesQuery(tableName?: string): string;
+  getDescribeIndexQuery(indexName: string, tableName?: string): string;
+  getSearchInDatabaseQuery(search: string): string;
 }
 
 // Importa los adaptadores (se crearán en los siguientes archivos)

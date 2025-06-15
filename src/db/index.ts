@@ -16,8 +16,6 @@ export async function initDatabase(connectionInfo: any, dbType: string = 'sqlite
   }*/
 
   dbAdapter = createDbAdapter(dbType, connectionInfo);
-  console.log('Tipo de base de datos:', dbType);
-  console.log('Información de conexión:', JSON.stringify(connectionInfo, null, 2));
   await dbAdapter.init();
 }
 
@@ -59,4 +57,29 @@ export function getDescribeTableQuery(tableName: string): string {
 export function getListProceduresQuery(): string {
   if (!dbAdapter) throw new Error("Database not initialized");
   return dbAdapter.getListProceduresQuery();
+}
+
+export function getListViewsQuery(): string {
+  if (!dbAdapter) throw new Error("Database not initialized");
+  return dbAdapter.getListViewsQuery();
+}
+
+export function getDescribeViewQuery(viewName: string): string {
+  if (!dbAdapter) throw new Error("Database not initialized");
+  return dbAdapter.getDescribeViewQuery(viewName);
+}
+
+export function getListIndexesQuery(tableName?: string): string {
+  if (!dbAdapter) throw new Error("Database not initialized");
+  return dbAdapter.getListIndexesQuery(tableName);
+}
+
+export function getDescribeIndexQuery(indexName: string, tableName?: string): string {
+  if (!dbAdapter) throw new Error("Database not initialized");
+  return dbAdapter.getDescribeIndexQuery(indexName, tableName);
+}
+
+export function getSearchInDatabaseQuery(search: string): string {
+  if (!dbAdapter) throw new Error("Database not initialized");
+  return dbAdapter.getSearchInDatabaseQuery(search);
 }

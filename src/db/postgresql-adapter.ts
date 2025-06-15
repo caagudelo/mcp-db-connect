@@ -122,4 +122,28 @@ export class PostgresqlAdapter implements DbAdapter {
         c.ordinal_position
     `;
   }
+
+  getListViewsQuery(): string {
+    return `SELECT table_name FROM information_schema.views WHERE table_schema = 'public'`;
+  }
+
+  getDescribeViewQuery(viewName: string): string {
+    return `SELECT definition FROM pg_views WHERE viewname = '${viewName}' AND schemaname = 'public'`;
+  }
+
+  getListIndexesQuery(tableName?: string): string {
+    if (tableName) {
+      return `SELECT indexname, indexdef FROM pg_indexes WHERE tablename = '${tableName}' AND schemaname = 'public'`;
+    }
+    return `SELECT indexname, tablename, indexdef FROM pg_indexes WHERE schemaname = 'public'`;
+  }
+
+  getDescribeIndexQuery(indexName: string, tableName?: string): string {
+    return `SELECT indexdef FROM pg_indexes WHERE indexname = '${indexName}' AND schemaname = 'public'`;
+  }
+
+  getSearchInDatabaseQuery(search: string): string {
+    // Búsqueda global: genera una consulta para buscar en todas las tablas y columnas
+    return `Metodo no soportado para PostgreSQL`;
+  }
 } 

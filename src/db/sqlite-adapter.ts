@@ -73,4 +73,32 @@ export class SqliteAdapter implements DbAdapter {
   getDescribeTableQuery(tableName: string): string {
     return `PRAGMA table_info(${tableName})`;
   }
+
+  getListViewsQuery(): string {
+    return "SELECT name FROM sqlite_master WHERE type='view'";
+  }
+
+  getDescribeViewQuery(viewName: string): string {
+    return `SELECT sql FROM sqlite_master WHERE type='view' AND name='${viewName}'`;
+  }
+
+  getListIndexesQuery(tableName?: string): string {
+    if (tableName) {
+      return `PRAGMA index_list('${tableName}')`;
+    }
+    return "SELECT name, tbl_name FROM sqlite_master WHERE type='index' AND name NOT LIKE 'sqlite_%'";
+  }
+
+  getDescribeIndexQuery(indexName: string, tableName?: string): string {
+    if (tableName) {
+      return `PRAGMA index_info('${indexName}')`;
+    }
+    return `SELECT sql FROM sqlite_master WHERE type='index' AND name='${indexName}'`;
+  }
+
+  getSearchInDatabaseQuery(search: string): string {
+    // SQLite no tiene búsqueda global, pero podemos buscar en todas las tablas y columnas con un script externo
+    // Aquí solo devolvemos un placeholder
+    return `-- Implementar búsqueda global manualmente para SQLite`;
+  }
 } 

@@ -91,4 +91,30 @@ export class MysqlAdapter implements DbAdapter {
   getDescribeTableQuery(tableName: string) {
     return `DESCRIBE \`${tableName}\``;
   }
+
+  getListViewsQuery(): string {
+    return "SHOW FULL TABLES WHERE Table_type = 'VIEW'";
+  }
+
+  getDescribeViewQuery(viewName: string): string {
+    return `SHOW CREATE VIEW \\\`${viewName}\\\``;
+  }
+
+  getListIndexesQuery(tableName?: string): string {
+    if (tableName) {
+      return `SHOW INDEX FROM \\\`${tableName}\\\``;
+    }
+    return `SELECT TABLE_NAME, INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA = DATABASE()`;
+  }
+
+  getDescribeIndexQuery(indexName: string, tableName?: string): string {
+    if (tableName) {
+      return `SHOW INDEX FROM \\\`${tableName}\\\` WHERE Key_name = '${indexName}'`;
+    }
+    return `SELECT * FROM INFORMATION_SCHEMA.STATISTICS WHERE INDEX_NAME = '${indexName}' AND TABLE_SCHEMA = DATABASE()`;
+  }
+
+  getSearchInDatabaseQuery(search: string): string {
+    return `Metodo no soportado para MySQL`;
+  }
 } 

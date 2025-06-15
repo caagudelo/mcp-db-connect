@@ -34,7 +34,12 @@ import {
   getDescribeTableQuery,
   getListProceduresQuery,
   closeDatabase,
-  getDatabaseMetadata
+  getDatabaseMetadata,
+  getListViewsQuery,
+  getDescribeViewQuery,
+  getListIndexesQuery,
+  getDescribeIndexQuery,
+  getSearchInDatabaseQuery
 } from './db/index.js';
 import minimist from 'minimist';
 import { fileURLToPath } from 'url';
@@ -59,22 +64,22 @@ function getTimestamp() {
 }
 
 // Sobrescribir console.log y console.error
-const originalConsoleLog = console.log;
-const originalConsoleError = console.error;
+// const originalConsoleLog = console.log;
+// const originalConsoleError = console.error;
 
-console.log = function (message, ...optionalParams) {
-  const timestamp = getTimestamp();
-  const logMessage = `[${timestamp}] ${message} ${optionalParams.join(' ')}`;
-  logStream.write(logMessage + '\n');
-  originalConsoleLog.call(console, logMessage);
-};
+// console.log = function (message, ...optionalParams) {
+//   const timestamp = getTimestamp();
+//   const logMessage = `[${timestamp}] ${message} ${optionalParams.join(' ')}`;
+//   logStream.write(logMessage + '\n');
+//   originalConsoleLog.call(console, logMessage);
+// };
 
-console.error = function (message, ...optionalParams) {
-  const timestamp = getTimestamp();
-  const logMessage = `[${timestamp}] ERROR: ${message} ${optionalParams.join(' ')}`;
-  logStream.write(logMessage + '\n');
-  originalConsoleError.call(console, logMessage);
-};
+// console.error = function (message, ...optionalParams) {
+//   const timestamp = getTimestamp();
+//   const logMessage = `[${timestamp}] ERROR: ${message} ${optionalParams.join(' ')}`;
+//   logStream.write(logMessage + '\n');
+//   originalConsoleError.call(console, logMessage);
+// };
 
 // Manejar el cierre del stream de logs
 process.on('exit', () => {
@@ -100,7 +105,7 @@ try {
 const server = new Server(
   {
     name: "mcp-db-connect",
-    version: "1.0.0",
+    version: "1.1.0",
   },
   {
     capabilities: {
@@ -195,7 +200,7 @@ async function runServer() {
   try {
     // Inicializar la base de datos
     await initDatabase(connectionInfo, dbType);
-    console.log('Adaptador seleccionado:', JSON.stringify(getDatabaseMetadata(), null, 2));
+    logToFile('Adaptador seleccionado:', JSON.stringify(getDatabaseMetadata(), null, 2));
     // Configurar manejadores de solicitudes
     server.setRequestHandler(ListResourcesRequestSchema, async () => {
       try {
@@ -208,7 +213,7 @@ async function runServer() {
           }))
         };
       } catch (error) {
-        console.error('Error al listar recursos:', error);
+        logToFile('Error al listar recursos:', error);
         return { resources: [] };
       }
     });
@@ -225,13 +230,13 @@ async function runServer() {
           }]
         };
       } catch (error) {
-        console.error('Error al leer recurso:', error);
+        logToFile('Error al leer recurso:', error);
         throw error;
       }
     });
 
     server.setRequestHandler(ListToolsRequestSchema, async () => {
-      console.log('Solicitud de herramientas recibida');
+      //console.log('Solicitud de herramientas recibida');
       const tools: Tool[] = [
         {
           name: 'read_query',
@@ -372,8 +377,62 @@ async function runServer() {
             required: []
           },
         },
+        {
+          name: "list_views",
+          description: "Obtener una lista de todas las vistas (views) en la base de datos",
+          parameters: {
+            type: "object",
+            properties: {},
+            required: []
+          }
+        },
+        {
+          name: "describe_view",
+          description: "Ver la definición SQL de una vista específica",
+          parameters: {
+            type: "object",
+            properties: {
+              view_name: { type: "string" }
+            },
+            required: ["view_name"]
+          }
+        },
+        {
+          name: "list_indexes",
+          description: "Obtener una lista de todos los índices en la base de datos o de una tabla específica",
+          parameters: {
+            type: "object",
+            properties: {
+              table_name: { type: "string", description: "(Opcional) Nombre de la tabla" }
+            },
+            required: []
+          }
+        },
+        {
+          name: "describe_index",
+          description: "Ver la definición de un índice específico",
+          parameters: {
+            type: "object",
+            properties: {
+              index_name: { type: "string" },
+              table_name: { type: "string", description: "(Opcional) Nombre de la tabla" }
+            },
+            required: ["index_name"]
+          }
+        },
+        {
+          name: "search_in_database",
+          description: "Buscar un valor en todas las tablas y columnas de la base de datos",
+          parameters: {
+            type: "object",
+            properties: {
+              search: { type: "string", description: "Valor a buscar" }
+            },
+            required: ["search"]
+          }
+        },
       ];
-      console.log('Tools enviados:', JSON.stringify(tools, null, 2));
+      //console.log('Tools enviados:', JSON.stringify(tools, null, 2));
       return {
         tools: tools.map(({ parameters, ...rest }) => ({
           ...rest,
@@ -481,11 +540,41 @@ async function runServer() {
             return formatSuccessResponse(result);
           }
 
+          case "list_views": {
+            const result = await dbAll(getListViewsQuery());
+            return formatSuccessResponse(result);
+          }
+          case "describe_view": {
+            const viewName = args.view_name as string;
+            const result = await dbAll(getDescribeViewQuery(viewName));
+            return formatSuccessResponse(result);
+          }
+          case "list_indexes": {
+            const tableName = args.table_name as string | undefined;
+            const result = await dbAll(getListIndexesQuery(tableName));
+            return formatSuccessResponse(result);
+          }
+          case "describe_index": {
+            const indexName = args.index_name as string;
+            const tableName = args.table_name as string | undefined;
+            const result = await dbAll(getDescribeIndexQuery(indexName, tableName));
+            return formatSuccessResponse(result);
+          }
+          case "search_in_database": {
+            const search = args.search as string;
+            if (dbType === 'sqlserver') {
+              const result = await dbAll(getSearchInDatabaseQuery(search));
+              return formatSuccessResponse(result);
+            } else {
+              return formatErrorResponse('Metodo no soportado para esta base de datos');
+            }
+          }
+
           default:
             throw new Error(`Herramienta no soportada: ${request.params.name}`);
         }
       } catch (error) {
-        console.error('Error al llamar herramienta:', error);
+        logToFile('Error al llamar herramienta:', error);
         return formatErrorResponse(`Error: ${error instanceof Error ? error.message : String(error)}`);
       }
     });
@@ -493,11 +582,17 @@ async function runServer() {
     // Iniciar el servidor MCP
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.log('Servidor MCP iniciado y escuchando en stdio');
+    logToFile('Servidor MCP iniciado y escuchando en stdio');
   } catch (error) {
-    console.error('Error al iniciar el servidor:', error);
+    logToFile('Error al iniciar el servidor:', error);
     process.exit(1);
   }
 }
 
 runServer(); 
+
+function logToFile(message: string, ...optionalParams: any[]) {
+  const timestamp = getTimestamp();
+  const logMessage = `[${timestamp}] ${message} ${optionalParams.join(' ')}`;
+  logStream.write(logMessage + '\n');
+} 

@@ -121,4 +121,44 @@ export class SqlServerAdapter implements DbAdapter {
         c.ORDINAL_POSITION
     `;
   }
+
+  getListViewsQuery(): string {
+    return `SELECT TABLE_NAME as name FROM INFORMATION_SCHEMA.VIEWS ORDER BY TABLE_NAME`;
+  }
+
+  getDescribeViewQuery(viewName: string): string {
+    return `SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_NAME = '${viewName}'`;
+  }
+
+  getListIndexesQuery(tableName?: string): string {
+    if (tableName) {
+      return `SELECT name, type_desc FROM sys.indexes WHERE object_id = OBJECT_ID('${tableName}')`;
+    }
+    return `SELECT i.name, t.name as table_name, i.type_desc FROM sys.indexes i JOIN sys.tables t ON i.object_id = t.object_id`;
+  }
+
+  getDescribeIndexQuery(indexName: string, tableName?: string): string {
+    return `SELECT * FROM sys.indexes WHERE name = '${indexName}'`;
+  }
+
+  getSearchInDatabaseQuery(search: string): string {
+    // Esta consulta genera SQL dinámico para buscar el valor en todas las columnas de tipo texto
+    return `
+      DECLARE @search NVARCHAR(MAX) = N'${search.replace(/'/g, "''")}'
+      DECLARE @sql NVARCHAR(MAX) = N''
+
+      SELECT @sql = @sql + 
+        CASE WHEN @sql = N'' THEN '' ELSE ' UNION ALL ' END +
+        'SELECT ''' + t.name + ''' AS TableName, ''' + c.name + ''' AS ColumnName, [' + c.name + '] AS Value
+        FROM [' + s.name + '].[' + t.name + ']
+        WHERE [' + c.name + '] LIKE ''%' + @search + '%'''
+      FROM sys.tables t
+      JOIN sys.columns c ON t.object_id = c.object_id
+      JOIN sys.types ty ON c.user_type_id = ty.user_type_id
+      JOIN sys.schemas s ON t.schema_id = s.schema_id
+      WHERE ty.name IN ('varchar', 'nvarchar', 'text', 'ntext', 'char', 'nchar')
+
+      EXEC sp_executesql @sql, N'@search NVARCHAR(MAX)', @search
+    `;
+  }
 } 

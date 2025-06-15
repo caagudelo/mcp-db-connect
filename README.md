@@ -205,6 +205,11 @@ Para configurar mcp-db-connect en tu editor, edita el archivo de configuración 
 | `describe_table` | Ver esquema de una tabla | `table_name`: Nombre de la tabla |
 | `append_insight` | Agregar un insight de negocio | `insight`: Texto del insight |
 | `list_insights` | Listar todos los insights de negocio | Ninguno |
+| `list_views` | Listar todas las vistas (views) de la base de datos | Ninguno |
+| `describe_view` | Ver la definición SQL de una vista específica | `view_name`: Nombre de la vista |
+| `list_indexes` | Listar todos los índices o los de una tabla específica | `table_name` (opcional): Nombre de la tabla |
+| `describe_index` | Ver la definición de un índice específico | `index_name`: Nombre del índice<br>`table_name` (opcional): Nombre de la tabla |
+| `search_in_database` | Buscar un valor en todas las tablas y columnas de la base de datos | `search`: Valor a buscar |
 
 
 ## Desarrollo
@@ -269,5 +274,5 @@ Puedes ejecutar el CLI directamente con npx:
 - **Para pruebas rápidas:** Usa `npx @cagudelo/mcp-db-connect ...`.
 - **Para desarrollo local:** Usa la ruta directa al archivo.
 
-> Si tu contraseña contiene caracteres especiales, revisa la sección de recomendaciones de seguridad en este README.
+
 
