@@ -53,15 +53,12 @@ export function createErrorResult(error: string): QueryResult {
 export function isSelectQuery(query: string): boolean {
   const normalizedQuery = query.trim().toLowerCase();
   return (
-    normalizedQuery.startsWith('select') ||
-    normalizedQuery.startsWith('exec') ||
-    normalizedQuery.startsWith('call') ||
-    normalizedQuery.startsWith('sp_')
+    normalizedQuery.startsWith('select')
   );
 }
 
 /**
- * Verifica si una consulta SQL es de tipo modificación (INSERT, UPDATE, DELETE)
+ * Verifica si una consulta SQL es de tipo modificación (INSERT, UPDATE, DELETE, CREATE, ALTER, EXEC, CALL, SP_, DELETE)  
  * @param {string} query - La consulta SQL a verificar
  * @returns {boolean} true si la consulta es de modificación, false en caso contrario
  */
@@ -70,6 +67,11 @@ export function isModificationQuery(query: string): boolean {
   return (
     normalizedQuery.startsWith('insert') ||
     normalizedQuery.startsWith('update') ||
+    normalizedQuery.startsWith('create') ||
+    normalizedQuery.startsWith('alter') ||
+    normalizedQuery.startsWith('exec') ||
+    normalizedQuery.startsWith('call') ||
+    normalizedQuery.startsWith('sp_') ||
     normalizedQuery.startsWith('delete')
   );
 }
@@ -108,22 +110,70 @@ export function formatError(error: Error): string {
 /**
  * Valida los parámetros de conexión a la base de datos
  * @param {any} config - Configuración de la base de datos
- * @returns {boolean} true si la configuración es válida, false en caso contrario
+ * @returns {{ isValid: boolean, errors: string[] }} Resultado de la validación
  */
-export function validateDatabaseConfig(config: any): boolean {
-  if (!config) return false;
-  
-  // Validar configuración para SQLite
-  if (config.path) {
-    return typeof config.path === 'string';
+export function validateDatabaseConfig(config: any): { isValid: boolean, errors: string[] } {
+  const errors: string[] = [];
+
+  if (!config) {
+    errors.push("No se proporcionó configuración.");
+    return { isValid: false, errors };
   }
-  
-  // Validar configuración para otros motores
-  return (
-    typeof config.host === 'string' &&
-    typeof config.database === 'string' &&
-    typeof config.user === 'string' &&
-    typeof config.password === 'string' &&
-    (!config.port || typeof config.port === 'number')
-  );
+
+  // SQLite
+  if (config.path) {
+    if (typeof config.path !== 'string' || !config.path) {
+      errors.push("El campo 'path' debe ser una cadena no vacía para SQLite.");
+    }
+    return { isValid: errors.length === 0, errors };
+  }
+
+  // MySQL/PostgreSQL
+  if (config.host && config.database && config.user && config.password) {
+    if (typeof config.host !== 'string' || !config.host) errors.push("El campo 'host' es obligatorio y debe ser una cadena.");
+    if (typeof config.database !== 'string' || !config.database) errors.push("El campo 'database' es obligatorio y debe ser una cadena.");
+    if (typeof config.user !== 'string' || !config.user) errors.push("El campo 'user' es obligatorio y debe ser una cadena.");
+    if (typeof config.password !== 'string' || !config.password) errors.push("El campo 'password' es obligatorio y debe ser una cadena.");
+    if (config.port && typeof config.port !== 'number') errors.push("El campo 'port' debe ser un número.");
+    return { isValid: errors.length === 0, errors };
+  }
+
+  // SQL Server
+  if (config.server && config.database && config.user && config.password) {
+    if (typeof config.server !== 'string' || !config.server) errors.push("El campo 'server' es obligatorio y debe ser una cadena.");
+    if (typeof config.database !== 'string' || !config.database) errors.push("El campo 'database' es obligatorio y debe ser una cadena.");
+    if (typeof config.user !== 'string' || !config.user) errors.push("El campo 'user' es obligatorio y debe ser una cadena.");
+    if (typeof config.password !== 'string' || !config.password) errors.push("El campo 'password' es obligatorio y debe ser una cadena.");
+    if (config.port && typeof config.port !== 'number') errors.push("El campo 'port' debe ser un número.");
+    return { isValid: errors.length === 0, errors };
+  }
+
+  errors.push("Faltan campos obligatorios para la configuración de la base de datos.");
+  return { isValid: false, errors };
+}
+
+export function formatErrorResponse(error: Error | string): { content: Array<{type: string, text: string}>, isError: boolean } {
+  const message = error instanceof Error ? error.message : error;
+  return {
+    content: [{ 
+      type: "text", 
+      text: JSON.stringify({ error: message }, null, 2) 
+    }],
+    isError: true
+  };
+}
+
+/**
+ * Format success response
+ * @param data Data to format
+ * @returns Formatted success response object
+ */
+export function formatSuccessResponse(data: any): { content: Array<{type: string, text: string}>, isError: boolean } {
+  return {
+    content: [{ 
+      type: "text", 
+      text: JSON.stringify(data, null, 2) 
+    }],
+    isError: false
+  };
 } 

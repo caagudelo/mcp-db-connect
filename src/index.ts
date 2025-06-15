@@ -22,7 +22,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 
 import { DatabaseConfig, Tool, DatabaseResource } from './types/index.js';
-import { isSelectQuery, isModificationQuery } from './utils/helpers.js';
+import { isSelectQuery, isModificationQuery, formatSuccessResponse, formatErrorResponse,convertToCSV } from './utils/helpers.js';
 import fs from 'fs';
 import path from 'path';
 import {
@@ -37,6 +37,10 @@ import {
   getDatabaseMetadata
 } from './db/index.js';
 import minimist from 'minimist';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Configura el sistema de logging de la aplicación
@@ -82,10 +86,20 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
+// Obtener la versión desde package.json
+const packageJsonPath = path.join(__dirname, '..', 'package.json');
+let appVersion = 'desconocida';
+try {
+  const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  appVersion = pkg.version;
+} catch (e) {
+  // Si falla, deja la versión como 'desconocida'
+}
+
 // Configurar el servidor
 const server = new Server(
   {
-    name: "db-connect",
+    name: "mcp-db-connect",
     version: "1.0.0",
   },
   {
@@ -99,7 +113,12 @@ const server = new Server(
 // Parsear argumentos de línea de comandos usando minimist
 const args = minimist(process.argv.slice(2));
 
-// Ejemplo: node index.js --mysql --host srv869.hstgr.io --database u210803106_citygps --port 3306 --user u210803106_citygps --password CityGps2024*
+
+
+if (args.v || args.version) {
+  console.log(`mcp-db-connect versión ${appVersion}`);
+  process.exit(0);
+}
 
 if (args.help || args.h) {
   console.log(`
@@ -227,7 +246,7 @@ async function runServer() {
         },
         {
           name: 'write_query',
-          description: 'Ejecutar una consulta INSERT, UPDATE o DELETE',
+          description: 'Ejecutar una consulta INSERT, UPDATE o DELETE, CREATE, ALTER, EXEC, CALL, SP_',
           parameters: {
             type: 'object',
             properties: {
@@ -373,93 +392,71 @@ async function runServer() {
               throw new Error('Solo se permiten consultas SELECT');
             }
             const readResult = await dbAll(args.query as string);
-            return {
-              content: [{ type: "text", text: JSON.stringify(readResult, null, 2) }],
-              isError: false
-            };
+            return formatSuccessResponse(readResult);
+
 
           case 'write_query':
             if (!isModificationQuery(args.query as string)) {
-              throw new Error('Solo se permiten consultas INSERT, UPDATE o DELETE');
+              throw new Error('Solo se permiten consultas INSERT, UPDATE o DELETE o CREATE, ALTER, EXEC, CALL, SP_');
             }
             const writeResult = await dbRun(args.query as string);
-            return {
-              content: [{ type: "text", text: JSON.stringify(writeResult, null, 2) }],
-              isError: false
-            };
+            return formatSuccessResponse(writeResult);
 
           case 'create_table':
             if (!(args.query as string).toLowerCase().includes('create table')) {
               throw new Error('Solo se permiten sentencias CREATE TABLE');
             }
             const createResult = await dbRun(args.query as string);
-            return {
-              content: [{ type: "text", text: JSON.stringify(createResult, null, 2) }],
-              isError: false
-            };
+            return formatSuccessResponse(createResult);
+
 
           case 'alter_table':
             if (!(args.query as string).toLowerCase().includes('alter table')) {
               throw new Error('Solo se permiten sentencias ALTER TABLE');
             }
             const alterResult = await dbRun(args.query as string);
-            return {
-              content: [{ type: "text", text: JSON.stringify(alterResult, null, 2) }],
-              isError: false
-            };
+            return formatSuccessResponse(alterResult);
+
 
           case 'drop_table':
             if (!args.confirm) {
               throw new Error('Se requiere confirmación para eliminar una tabla');
             }
             const dropResult = await dbRun(`DROP TABLE ${args.table_name as string}`);
-            return {
-              content: [{ type: "text", text: JSON.stringify(dropResult, null, 2) }],
-              isError: false
-            };
+            return formatSuccessResponse(dropResult);
 
           case 'export_query':
             if (!isSelectQuery(args.query as string)) {
               throw new Error('Solo se permiten consultas SELECT para exportar');
             }
             const exportResult = await dbAll(args.query as string);
+
             if (args.format === 'csv') {
               // Implementar exportación a CSV
+              const csvContent = convertToCSV(exportResult);
               return {
-                content: [{ type: "text", text: JSON.stringify(exportResult, null, 2) }],
+                content: [{ type: "text", text: csvContent }],
                 isError: false
               };
             } else if (args.format === 'json') {
-              return {
-                content: [{ type: "text", text: JSON.stringify(exportResult, null, 2) }],
-                isError: false
-              };
+              return formatSuccessResponse(exportResult);
             }
             throw new Error('Formato de exportación no soportado');
 
           case "list_tables": {
             const result = await dbAll(getListTablesQuery());
-            return {
-              content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-              isError: false,
-            };
+            return formatSuccessResponse(result);
           }
 
           case "list_procedures": {
             const result = await dbAll(getListProceduresQuery());
-            return {
-              content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-              isError: false,
-            };
+            return formatSuccessResponse(result);  
           }
           case "describe_table": {
             const tableName = args.table_name as string;
             const query = getDescribeTableQuery(tableName);
             const result = await dbAll(query);
-            return {
-              content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-              isError: false,
-            };
+            return formatSuccessResponse(result);
           }
 
           case "append_insight": {
@@ -475,18 +472,13 @@ async function runServer() {
               "INSERT INTO mcp_insights (insight) VALUES (?)",
               [insight]
             );
-            return {
-              content: [{ type: "text", text: JSON.stringify({ success: true, message: "Insight agregado" }, null, 2) }],
-              isError: false,
-            };
+            return formatSuccessResponse({ success: true, message: "Insight agregado" });
+
           }
 
           case "list_insights": {
             const result = await dbAll('SELECT * FROM mcp_insights ORDER BY created_at DESC');
-            return {
-              content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
-              isError: false,
-            };
+            return formatSuccessResponse(result);
           }
 
           default:
@@ -494,10 +486,7 @@ async function runServer() {
         }
       } catch (error) {
         console.error('Error al llamar herramienta:', error);
-        return {
-          content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
-          isError: true
-        };
+        return formatErrorResponse(`Error: ${error instanceof Error ? error.message : String(error)}`);
       }
     });
 

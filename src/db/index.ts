@@ -1,4 +1,5 @@
 import { DbAdapter, createDbAdapter } from './adapter.js';
+//import { validateDatabaseConfig } from '../utils/helpers';
 
 let dbAdapter: DbAdapter | null = null;
 
@@ -6,6 +7,14 @@ export async function initDatabase(connectionInfo: any, dbType: string = 'sqlite
   if (typeof connectionInfo === 'string') {
     connectionInfo = { path: connectionInfo };
   }
+
+  // Validar la configuración antes de inicializar la base de datos
+/*  const validation = validateDatabaseConfig(connectionInfo);
+  if (!validation.isValid) {
+    console.log("Configuración inválida:\n" + validation.errors.join('\n'));
+    process.exit(1);
+  }*/
+
   dbAdapter = createDbAdapter(dbType, connectionInfo);
   console.log('Tipo de base de datos:', dbType);
   console.log('Información de conexión:', JSON.stringify(connectionInfo, null, 2));

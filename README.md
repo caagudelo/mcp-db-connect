@@ -195,7 +195,7 @@ Para configurar mcp-db-connect en tu editor, edita el archivo de configuración 
 | Herramienta | Descripción | Parámetros Requeridos |
 |-------------|-------------|----------------------|
 | `read_query` | Ejecutar consultas SELECT | `query`: Consulta SQL SELECT |
-| `write_query` | Ejecutar consultas INSERT, UPDATE o DELETE | `query`: Consulta SQL de modificación |
+| `write_query` | Ejecutar consultas INSERT, UPDATE, DELETE, CREATE, ALTER, EXEC, CALL, SP_ | `query`: Consulta SQL de modificación |
 | `create_table` | Crear nuevas tablas | `query`: Sentencia CREATE TABLE |
 | `alter_table` | Modificar esquema de tablas | `query`: Sentencia ALTER TABLE |
 | `drop_table` | Eliminar tablas | `table_name`: Nombre de la tabla<br>`confirm`: Bandera de seguridad |
@@ -203,9 +203,9 @@ Para configurar mcp-db-connect en tu editor, edita el archivo de configuración 
 | `list_tables` | Listar todas las tablas | Ninguno |
 | `list_procedures` | Listar todos los procedimientos almacenados | Ninguno |
 | `describe_table` | Ver esquema de una tabla | `table_name`: Nombre de la tabla |
+| `append_insight` | Agregar un insight de negocio | `insight`: Texto del insight |
+| `list_insights` | Listar todos los insights de negocio | Ninguno |
 
-
-> **Nota:** Si el motor de base de datos no soporta procedimientos almacenados, la herramienta puede devolver una lista vacía o un mensaje de error.
 
 ## Desarrollo
 
