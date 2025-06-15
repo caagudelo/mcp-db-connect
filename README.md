@@ -1,3 +1,37 @@
+# ¿Qué es un servidor MCP?
+
+Un **servidor MCP** (Model Context Protocol) es un software que actúa como intermediario entre aplicaciones (como editores de código o asistentes inteligentes) y bases de datos. Su función principal es recibir solicitudes (por ejemplo, ejecutar una consulta SQL), procesarlas y devolver los resultados de manera estructurada y segura.
+
+## ¿Cómo funciona un servidor MCP?
+
+- El servidor MCP se ejecuta en tu computadora o en un servidor remoto.
+- Recibe comandos o consultas desde una aplicación cliente (por ejemplo, Claude Desktop, un editor de código como Cursor o Visual Studio Code, o una API).
+- Procesa estos comandos, accediendo a la base de datos que tengas configurada (puede ser SQLite, SQL Server, PostgreSQL, MySQL, etc.).
+- Devuelve los resultados al cliente en un formato fácil de usar (como JSON o CSV).
+
+
+## Finalidad de esta aplicación
+
+La finalidad principal de este proyecto es **integrar el servidor MCP con editores de código como Cursor y Visual Studio Code**. Esto permite a los usuarios interactuar con bases de datos utilizando modelos de inteligencia artificial (IA) y lenguaje natural. Así, puedes escribir instrucciones en español o inglés (por ejemplo, "muéstrame todos los usuarios registrados este mes") y el sistema las traduce en consultas SQL, facilitando el trabajo con bases de datos incluso si no dominas SQL.
+
+## Configuración en editores de código
+
+A continuación, algunos recursos y enlaces oficiales para configurar MCP en los editores más populares:
+
+- **Visual Studio Code:**
+  - [Guía oficial de integración de MCP con VS Code (Claude Desktop)](https://docs.anthropic.com/claude/docs/database-mcp)
+  - [Extensión Claude Desktop para VS Code](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-desktop)
+
+- **Cursor:**
+  - [Documentación oficial de Cursor sobre integración con MCP](https://docs.cursor.so/ai-database)
+  - [Página principal de Cursor](https://www.cursor.so/)
+
+## Documentación oficial y recursos
+
+- [Documentación oficial del protocolo MCP (en inglés)](https://github.com/anthropic-ai/model-context-protocol)
+- [Repositorio oficial de mcp-db-connect](https://github.com/caagudelo/mcp-db-connect)
+- [Guía de uso de Claude Desktop con MCP](https://docs.anthropic.com/claude/docs/database-mcp)
+
 # mcp-db-connect
 
 Un servidor MCP (Model Context Protocol) que proporciona capacidades de acceso a bases de datos para Claude, soportando SQLite, SQL Server, PostgreSQL y MySQL.

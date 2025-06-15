@@ -1,5 +1,17 @@
 #!/usr/bin/env node
 
+
+/**
+ * @file index.ts
+ * @description Servidor MCP (Model Context Protocol) para acceso a bases de datos
+ * @version 1.0.0
+ * @author Equipo de Desarrollo
+ * 
+ * Este servidor implementa un protocolo MCP que permite la interacción con diferentes
+ * tipos de bases de datos (MySQL, SQL Server, PostgreSQL y SQLite) a través de una
+ * interfaz estandarizada. Proporciona herramientas para realizar operaciones CRUD,
+ * gestión de esquemas y exportación de datos.
+ */
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -25,13 +37,18 @@ import {
 } from './db/index.js';
 import minimist from 'minimist';
 
-// Configurar el sistema de logs
+/**
+ * Configura el sistema de logging de la aplicación
+ * Crea un archivo de log en el directorio actual y configura los handlers
+ * para console.log y console.error
+ */
 const logFile = path.join(process.cwd(), 'server.log');
-
-
 const logStream = fs.createWriteStream(logFile, { flags: 'a' });
 
-// Función para formatear la fecha
+/**
+ * Genera un timestamp en formato ISO para los logs
+ * @returns {string} Timestamp en formato ISO
+ */
 function getTimestamp() {
   return new Date().toISOString();
 }
@@ -149,6 +166,11 @@ if (args.mysql) {
   throw new Error('Tipo de base de datos no soportado. Usa --mysql, --sqlserver, --postgresql o --sqlite');
 }
 
+/**
+ * Inicializa y ejecuta el servidor MCP
+ * Configura los handlers para las diferentes solicitudes y establece la conexión
+ * con la base de datos especificada
+ */
 async function runServer() {
   try {
     // Inicializar la base de datos

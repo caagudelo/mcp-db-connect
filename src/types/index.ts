@@ -1,14 +1,30 @@
+/**
+ * @file types/index.ts
+ * @description Definiciones de tipos para el servidor MCP de base de datos
+ */
+
 // Tipos para la configuración de la base de datos
+/**
+ * Configuración de la base de datos
+ * @interface DatabaseConfig
+ */
 export interface DatabaseConfig {
-  type: 'sqlite' | 'sqlserver' | 'postgresql' | 'mysql';
-  path?: string; // Para SQLite
+  /** Host del servidor de base de datos */
   host?: string;
-  port?: number;
-  database: string;
+  /** Nombre de la base de datos */
+  database?: string;
+  /** Usuario de la base de datos */
   user?: string;
+  /** Contraseña de la base de datos */
   password?: string;
-  ssl?: boolean | string | SslOptions;
-  connectionTimeout?: number;
+  /** Puerto de conexión */
+  port?: number;
+  /** Ruta al archivo de base de datos (para SQLite) */
+  path?: string;
+  /** Configuración SSL */
+  ssl?: boolean;
+  /** Confiar en el certificado del servidor (para SQL Server) */
+  trustServerCertificate?: boolean;
 }
 
 export interface SslOptions {
@@ -28,19 +44,33 @@ export interface QueryResult {
 }
 
 // Tipos para las herramientas disponibles
+/**
+ * Herramienta disponible en el servidor MCP
+ * @interface Tool
+ */
 export interface Tool {
+  /** Nombre de la herramienta */
   name: string;
+  /** Descripción de la herramienta */
   description: string;
+  /** Esquema de parámetros de la herramienta */
   parameters: {
-    type: "object";
+    type: string;
     properties: Record<string, any>;
     required: string[];
   };
 }
 
 // Tipos para los recursos de la base de datos
+/**
+ * Recurso de base de datos
+ * @interface DatabaseResource
+ */
 export interface DatabaseResource {
+  /** URI del recurso */
+  uri: string;
+  /** Tipo MIME del recurso */
+  mimeType: string;
+  /** Nombre del recurso */
   name: string;
-  type: 'table';
-  description: string;
 } 
