@@ -86,8 +86,10 @@ Puedes usar los siguientes flags según el motor:
 #### Ejemplo para SQL Server:
 
 ```bash
-node dist/index.js --sqlserver --host <host_sqlserver> --database <nombre_base_datos> --port <puerto> --user <usuario> --password "<contraseña>" --trustServerCertificate true
+node dist/index.js --sqlserver --host <host_sqlserver> --instance <nombre_instancia> --database <nombre_base_datos> --port <puerto> --user <usuario> --password "<contraseña>" --trustServerCertificate true
 ```
+
+> **Nota:** El parámetro `--instance` es opcional y solo se usa si necesitas conectarte a una instancia nombrada de SQL Server. Si no lo especificas, se conectará a la instancia predeterminada.
 
 #### Ejemplo para PostgreSQL:
 
@@ -139,6 +141,7 @@ Para configurar mcp-db-connect en tu editor, edita el archivo de configuración 
         "/ruta/absoluta/a/mcp-db-connect/dist/index.js",
         "--sqlserver",
         "--host", "<host_sqlserver>",
+        "--instance", "<nombre_instancia>",
         "--database", "<nombre_base_datos>",
         "--port", "<puerto>",
         "--user", "<usuario>",
@@ -273,6 +276,7 @@ Puedes ejecutar el CLI directamente con npx:
 - **Para usuarios finales o equipos:** Instala globalmente y usa el comando (`mcp-db-connect`).
 - **Para pruebas rápidas:** Usa `npx @cagudelo/mcp-db-connect ...`.
 - **Para desarrollo local:** Usa la ruta directa al archivo.
+
 
 
 

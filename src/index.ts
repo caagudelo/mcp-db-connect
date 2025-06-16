@@ -131,13 +131,14 @@ mcp-db-connect - Servidor MCP para acceso a bases de datos
 
 Uso:
   mcp-db-connect --mysql --host <host> --database <db> --port <puerto> --user <usuario> --password "<contraseña>"
-  mcp-db-connect --sqlserver --host <host> --database <db> --port <puerto> --user <usuario> --password "<contraseña>" --trustServerCertificate true
+  mcp-db-connect --sqlserver --host <host> --instance <instancia> --database <db> --port <puerto> --user <usuario> --password "<contraseña>" --trustServerCertificate true
   mcp-db-connect --postgresql --host <host> --database <db> --port <puerto> --user <usuario> --password "<contraseña>" --ssl true
   mcp-db-connect --sqlite --path /ruta/a/tu/base.db
 
 Opciones:
   --mysql, --sqlserver, --postgresql, --sqlite   Selecciona el motor de base de datos
   --host         Host del servidor de base de datos
+  --instance     Nombre de la instancia de SQL Server (opcional)
   --database     Nombre de la base de datos
   --port         Puerto de conexión
   --user         Usuario de la base de datos
@@ -172,8 +173,12 @@ if (args.mysql) {
     user: args.user,
     password: String(args.password),
     port: parseInt(args.port),
-    trustServerCertificate: args.trustServerCertificate === 'true'
+    trustServerCertificate: args.trustServerCertificate === 'true',
+    options: {}
   };
+  if (args.instance) {
+    connectionInfo.options.instanceName = args.instance;
+  }
 } else if (args.postgresql) {
   dbType = 'postgresql';
   connectionInfo = {
