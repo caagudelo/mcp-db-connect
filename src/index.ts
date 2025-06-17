@@ -460,9 +460,9 @@ async function runServer() {
 
 
           case 'write_query':
-            if (!isModificationQuery(args.query as string)) {
-              throw new Error('Solo se permiten consultas INSERT, UPDATE o DELETE o CREATE, ALTER, EXEC, CALL, SP_');
-            }
+            //if (!isModificationQuery(args.query as string)) {
+            //  throw new Error('Solo se permiten consultas INSERT, UPDATE o DELETE o CREATE, ALTER, EXEC, CALL, SP_');
+            //}
             const writeResult = await dbRun(args.query as string);
             return formatSuccessResponse(writeResult);
 
