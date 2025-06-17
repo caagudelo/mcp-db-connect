@@ -1,6 +1,6 @@
 {
   "name": "@cagudelo/mcp-db-connect",
-  "version": "1.1.7",
+  "version": "1.1.8",
   "description": "Servidor MCP para acceso a bases de datos",
   "main": "dist/index.js",
   "type": "module",

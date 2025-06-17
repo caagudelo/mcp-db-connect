@@ -105,7 +105,7 @@ server.tool(
   },
   async ({ query }, extra) => {
     try {
-      if (!isModificationQuery(query)) throw new Error("Solo se permiten consultas de modificación (INSERT, UPDATE, DELETE, CREATE, ALTER, DROP, EXEC, CALL, etc.)");
+      //if (!isModificationQuery(query)) throw new Error("Solo se permiten consultas de modificación (INSERT, UPDATE, DELETE, CREATE, ALTER, DROP, EXEC, CALL, etc.)");
       const result = await dbRun(query);
       return {
         content: [
