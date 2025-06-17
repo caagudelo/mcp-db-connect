@@ -73,12 +73,12 @@ server.tool(
   "read_query",
   "Consulta SQL SELECT",
   {
-    query: z.string().describe("Consulta SQL SELECT"),
+    query: z.string().describe("Consulta SQL SELECT")
   },
-  async (args, extra) => {
+  async ({ query }, extra) => {
     try {
-      if (!isSelectQuery(args.query)) throw new Error("Solo se permiten consultas SELECT");
-      const result = await dbAll(args.query);
+      if (!isSelectQuery(query)) throw new Error("Solo se permiten consultas SELECT");
+      const result = await dbAll(query);
       return {
         content: [
           { type: "text", text: JSON.stringify(result, null, 2) }
@@ -99,14 +99,14 @@ server.tool(
 // Herramienta: write_query
 server.tool(
   "write_query",
-  "Consulta SQL de modificación",
+  "Ejecuta una consulta SQL de tipo (INSERT, UPDATE, DELETE, CREATE, ALTER, DROP, EXEC, CALL, etc.).",
   {
-    query: z.string().describe("Consulta SQL de modificación"),
+    query: z.string().describe("Consulta SQL de tipo (INSERT, UPDATE, DELETE, CREATE, ALTER, DROP, EXEC, CALL, etc.)")
   },
-  async (args, extra) => {
+  async ({ query }, extra) => {
     try {
-      if (!isModificationQuery(args.query)) throw new Error("Solo se permiten consultas de modificación");
-      const result = await dbRun(args.query);
+      if (!isModificationQuery(query)) throw new Error("Solo se permiten consultas de modificación (INSERT, UPDATE, DELETE, CREATE, ALTER, DROP, EXEC, CALL, etc.)");
+      const result = await dbRun(query);
       return {
         content: [
           { type: "text", text: JSON.stringify(result, null, 2) }
@@ -129,12 +129,12 @@ server.tool(
   "create_table",
   "Sentencia CREATE TABLE",
   {
-    query: z.string().describe("Sentencia CREATE TABLE"),
+    query: z.string().describe("Sentencia CREATE TABLE")
   },
-  async (args, extra) => {
+  async ({ query }, extra) => {
     try {
-      if (!(args.query.toLowerCase().includes('create table'))) throw new Error('Solo se permiten sentencias CREATE TABLE');
-      const result = await dbRun(args.query);
+      if (!(query.toLowerCase().includes('create table'))) throw new Error('Solo se permiten sentencias CREATE TABLE');
+      const result = await dbRun(query);
       return {
         content: [
           { type: "text", text: JSON.stringify(result, null, 2) }
@@ -157,12 +157,12 @@ server.tool(
   "alter_table",
   "Sentencia ALTER TABLE",
   {
-    query: z.string().describe("Sentencia ALTER TABLE"),
+    query: z.string().describe("Sentencia ALTER TABLE")
   },
-  async (args, extra) => {
+  async ({ query }, extra) => {
     try {
-      if (!(args.query.toLowerCase().includes('alter table'))) throw new Error('Solo se permiten sentencias ALTER TABLE');
-      const result = await dbRun(args.query);
+      if (!(query.toLowerCase().includes('alter table'))) throw new Error('Solo se permiten sentencias ALTER TABLE');
+      const result = await dbRun(query);
       return {
         content: [
           { type: "text", text: JSON.stringify(result, null, 2) }
@@ -183,14 +183,15 @@ server.tool(
 // Herramienta: drop_table
 server.tool(
   "drop_table",
+  "Eliminar una tabla",
   {
     table_name: z.string().describe("Nombre de la tabla"),
-    confirm: z.boolean().describe("Confirmar eliminación"),
+    confirm: z.boolean().describe("Confirmar eliminación")
   },
-  async (args, extra) => {
+  async ({ table_name, confirm }, extra) => {
     try {
-      if (!args.confirm) throw new Error('Se requiere confirmación para eliminar una tabla');
-      const result = await dbRun(`DROP TABLE ${args.table_name}`);
+      if (!confirm) throw new Error('Se requiere confirmación para eliminar una tabla');
+      const result = await dbRun(`DROP TABLE ${table_name}`);
       return {
         content: [
           { type: "text", text: JSON.stringify(result, null, 2) }
@@ -211,15 +212,16 @@ server.tool(
 // Herramienta: export_query
 server.tool(
   "export_query",
+  "Exportar resultados de una consulta",
   {
     query: z.string().describe("Consulta SQL SELECT"),
-    format: z.enum(["csv", "json"]).describe("Formato de exportación (csv o json)"),
+    format: z.enum(["csv", "json"]).describe("Formato de exportación (csv o json)")
   },
-  async (args, extra) => {
+  async ({ query, format }, extra) => {
     try {
-      if (!isSelectQuery(args.query)) throw new Error('Solo se permiten consultas SELECT para exportar');
-      const exportResult = await dbAll(args.query);
-      if (args.format === 'csv') {
+      if (!isSelectQuery(query)) throw new Error('Solo se permiten consultas SELECT para exportar');
+      const exportResult = await dbAll(query);
+      if (format === 'csv') {
         const csvContent = convertToCSV(exportResult);
         return {
           content: [
@@ -227,7 +229,7 @@ server.tool(
           ],
           isError: false
         };
-      } else if (args.format === 'json') {
+      } else if (format === 'json') {
         return {
           content: [
             { type: "text", text: JSON.stringify(exportResult, null, 2) }
@@ -314,15 +316,12 @@ server.tool(
   "describe_table",
   "Ver información del esquema de una tabla específica",
   {
-    type: "object",
-    properties: {
-      table_name: { type: "string", description: "Nombre de la tabla" }
-    },
-    required: ["table_name"]
+    table_name: z.string().describe("Nombre de la tabla")
   },
-  async (args, extra) => {
+  async ({ table_name }, extra) => {
+    console.log("[DEBUG describe_table] table_name:", table_name);
     try {
-      const query = getDescribeTableQuery(args.table_name);
+      const query = getDescribeTableQuery(table_name);
       const result = await dbAll(query);
       return {
         content: [
@@ -346,16 +345,12 @@ server.tool(
   "append_insight",
   "Agregar un insight de negocio a la base de datos",
   {
-    type: "object",
-    properties: {
-      insight: { type: "string", description: "Insight de negocio" }
-    },
-    required: ["insight"]
+    insight: z.string().describe("Insight de negocio")
   },
-  async (args, extra) => {
+  async ({ insight }, extra) => {
     try {
       await dbRun(`CREATE TABLE IF NOT EXISTS mcp_insights (id INTEGER PRIMARY KEY AUTOINCREMENT, insight TEXT NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)`);
-      await dbRun("INSERT INTO mcp_insights (insight) VALUES (?)", [args.insight]);
+      await dbRun("INSERT INTO mcp_insights (insight) VALUES (?)", [insight]);
       return {
         content: [
           { type: "text", text: "Insight agregado" }
@@ -436,15 +431,11 @@ server.tool(
   "describe_view",
   "Ver la definición SQL de una vista específica",
   {
-    type: "object",
-    properties: {
-      view_name: { type: "string", description: "Nombre de la vista" }
-    },
-    required: ["view_name"]
+    view_name: z.string().describe("Nombre de la vista")
   },
-  async (args, extra) => {
+  async ({ view_name }, extra) => {
     try {
-      const result = await dbAll(getDescribeViewQuery(args.view_name));
+      const result = await dbAll(getDescribeViewQuery(view_name));
       return {
         content: [
           { type: "text", text: JSON.stringify(result, null, 2) }
@@ -467,15 +458,11 @@ server.tool(
   "list_indexes",
   "Obtener una lista de todos los índices en la base de datos o de una tabla específica",
   {
-    type: "object",
-    properties: {
-      table_name: { type: "string", description: "(Opcional) Nombre de la tabla" }
-    },
-    required: []
+    table_name: z.string().describe("(Opcional) Nombre de la tabla").optional()
   },
-  async (args, extra) => {
+  async ({ table_name }, extra) => {
     try {
-      const result = await dbAll(getListIndexesQuery(args.table_name));
+      const result = await dbAll(getListIndexesQuery(table_name));
       return {
         content: [
           { type: "text", text: JSON.stringify(result, null, 2) }
@@ -498,16 +485,12 @@ server.tool(
   "describe_index",
   "Ver la definición de un índice específico",
   {
-    type: "object",
-    properties: {
-      index_name: { type: "string", description: "Nombre del índice" },
-      table_name: { type: "string", description: "(Opcional) Nombre de la tabla" }
-    },
-    required: ["index_name"]
+    index_name: z.string().describe("Nombre del índice"),
+    table_name: z.string().describe("(Opcional) Nombre de la tabla").optional()
   },
-  async (args, extra) => {
+  async ({ index_name, table_name }, extra) => {
     try {
-      const result = await dbAll(getDescribeIndexQuery(args.index_name, args.table_name));
+      const result = await dbAll(getDescribeIndexQuery(index_name, table_name));
       return {
         content: [
           { type: "text", text: JSON.stringify(result, null, 2) }
@@ -530,16 +513,12 @@ server.tool(
   "search_in_database",
   "Buscar un valor en todas las tablas y columnas de la base de datos",
   {
-    type: "object",
-    properties: {
-      search: { type: "string", description: "Valor a buscar" }
-    },
-    required: ["search"]
+    search: z.string().describe("Valor a buscar")
   },
-  async (args, extra) => {
+  async ({ search }, extra) => {
     try {
       if (dbType === 'sqlserver') {
-        const result = await dbAll(getSearchInDatabaseQuery(args.search));
+        const result = await dbAll(getSearchInDatabaseQuery(search));
         return {
           content: [
             { type: "text", text: JSON.stringify(result, null, 2) }
@@ -586,6 +565,13 @@ const setupServer = async () => {
 };
 
 app.post("/mcp", async (req: Request, res: Response) => {
+  console.log("\n=== Nueva Petición MCP ===");
+  console.log("Headers:", req.headers);
+  console.log("Body:", JSON.stringify(req.body, null, 2));
+  console.log("Method:", req.body.method);
+  console.log("Params:", req.body.params);
+  console.log("========================\n");
+  
   await transport.handleRequest(req, res, req.body);
 });
 

@@ -256,13 +256,13 @@ async function runServer() {
         },
         {
           name: 'write_query',
-          description: 'Ejecutar una consulta INSERT, UPDATE o DELETE, CREATE, ALTER, EXEC, CALL, SP_',
+          description: 'Ejecutar una consulta de tipo INSERT, UPDATE o DELETE, CREATE, ALTER, EXEC, CALL, SP_',
           parameters: {
             type: 'object',
             properties: {
               query: {
                 type: 'string',
-                description: 'Consulta SQL de modificación'
+                description: 'query de tipo INSERT, UPDATE o DELETE, CREATE, ALTER, EXEC, CALL, SP_'
               }
             },
             required: ['query']

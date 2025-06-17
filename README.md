@@ -209,22 +209,22 @@ A partir de la versión actual, el proyecto utiliza la librería [`minimist`](ht
 
 | Herramienta | Descripción | Parámetros Requeridos |
 |-------------|-------------|----------------------|
-| `read_query` | Ejecutar consultas SELECT | `query`: Consulta SQL SELECT |
-| `write_query` | Ejecutar consultas INSERT, UPDATE, DELETE, CREATE, ALTER, EXEC, CALL, SP_ | `query`: Consulta SQL de modificación |
-| `create_table` | Crear nuevas tablas | `query`: Sentencia CREATE TABLE |
-| `alter_table` | Modificar esquema de tablas | `query`: Sentencia ALTER TABLE |
-| `drop_table` | Eliminar tablas | `table_name`: Nombre de la tabla<br>`confirm`: Bandera de seguridad |
-| `export_query` | Exportar resultados | `query`: Consulta SQL SELECT<br>`format`: "csv" o "json" |
-| `list_tables` | Listar todas las tablas | Ninguno |
-| `list_procedures` | Listar todos los procedimientos almacenados | Ninguno |
-| `describe_table` | Ver esquema de una tabla | `table_name`: Nombre de la tabla |
-| `append_insight` | Agregar un insight de negocio | `insight`: Texto del insight |
-| `list_insights` | Listar todos los insights de negocio | Ninguno |
-| `list_views` | Listar todas las vistas (views) de la base de datos | Ninguno |
-| `describe_view` | Ver la definición SQL de una vista específica | `view_name`: Nombre de la vista |
-| `list_indexes` | Listar todos los índices o los de una tabla específica | `table_name` (opcional): Nombre de la tabla |
-| `describe_index` | Ver la definición de un índice específico | `index_name`: Nombre del índice<br>`table_name` (opcional): Nombre de la tabla |
-| `search_in_database` | Buscar un valor en todas las tablas y columnas de la base de datos | `search`: Valor a buscar |
+| `read_query` | Ejecuta una consulta SQL SELECT para leer datos de la base de datos. | `query`: Consulta SQL SELECT |
+| `write_query` | Ejecuta una consulta SQL de modificación (INSERT, UPDATE, DELETE, CREATE, ALTER, DROP, EXEC, CALL, etc.). No permite SELECT ni consultas de solo lectura. | `query`: Consulta SQL de modificación |
+| `create_table` | Crea una nueva tabla en la base de datos utilizando una sentencia CREATE TABLE. | `query`: Sentencia CREATE TABLE |
+| `alter_table` | Modifica el esquema de una tabla existente utilizando una sentencia ALTER TABLE. | `query`: Sentencia ALTER TABLE |
+| `drop_table` | Elimina una tabla de la base de datos. Requiere confirmación para evitar eliminaciones accidentales. | `table_name`: Nombre de la tabla<br>`confirm`: Bandera de seguridad |
+| `export_query` | Exporta los resultados de una consulta SELECT en formato CSV o JSON. | `query`: Consulta SQL SELECT<br>`format`: "csv" o "json" |
+| `list_tables` | Obtiene una lista de todas las tablas en la base de datos. | Ninguno |
+| `list_procedures` | Obtiene una lista de todos los procedimientos almacenados en la base de datos. | Ninguno |
+| `describe_table` | Muestra información detallada del esquema de una tabla específica. | `table_name`: Nombre de la tabla |
+| `append_insight` | Agrega un insight de negocio a la base de datos. | `insight`: Texto del insight |
+| `list_insights` | Lista todos los insights de negocio almacenados en la base de datos. | Ninguno |
+| `list_views` | Obtiene una lista de todas las vistas (views) en la base de datos. | Ninguno |
+| `describe_view` | Muestra la definición SQL de una vista específica. | `view_name`: Nombre de la vista |
+| `list_indexes` | Obtiene una lista de todos los índices en la base de datos o de una tabla específica. | `table_name` (opcional): Nombre de la tabla |
+| `describe_index` | Muestra la definición de un índice específico. | `index_name`: Nombre del índice<br>`table_name` (opcional): Nombre de la tabla |
+| `search_in_database` | Busca un valor en todas las tablas y columnas de la base de datos. | `search`: Valor a buscar |
 
 
 ## Desarrollo

@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
   title: MCPTest
-  description: Conector MCP HTTP para bases de datos
+  description: MCP Para conexión a bases de datos
   version: '1.0'
 host: 7r2fqd47-3000.use2.devtunnels.ms
 basePath: /
@@ -15,23 +15,41 @@ produces:
 paths:
   /mcp:
     post:
-      summary: Endpoint MCP principal
-      description: >
-        Endpoint para enviar comandos MCP (JSON-RPC 2.0). El body debe ser un
-        objeto JSON-RPC válido.
-      operationId: mcpCommand
+      summary: MCP_CML
+      description: MCP Para conexión a bases de datos
+      operationId: McpCommand
       consumes:
         - application/json
       produces:
         - application/json
         - text/event-stream
       parameters:
-        - in: body
-          name: body
-          description: Objeto JSON-RPC 2.0
-          required: true
+        - name: Content-Type
+          in: header
+          required: false
+          type: string
+          default: application/json
+        - name: Accept
+          in: header
+          required: false
+          type: string
+          default: application/json, text/event-stream
+        - name: body
+          in: body
+          required: false
           schema:
-            $ref: '#/definitions/MCPRequest'
+            type: object
+            properties:
+              method:
+                type: string
+                description: method
+              jsonrpc:
+                type: string
+                description: jsonrpc
+              id:
+                type: integer
+                format: int32
+                description: id
       responses:
         '200':
           description: Respuesta JSON-RPC o event-stream
@@ -52,15 +70,36 @@ definitions:
       jsonrpc:
         type: string
         example: '2.0'
+        title: jsonrpc
       method:
         type: string
-        example: tools/list
+        example: list_tables
+        description: >-
+          Nombre de la herramienta MCP a invocar (por ejemplo list_tables,
+          write_query, describe_table, etc.)
       params:
         type: object
-        description: Parámetros específicos del método
+        description: >
+          Parámetros específicos del método. La estructura varía según la
+          herramienta.
+
+
+          Ejemplos:
+            - list_tables: {}
+            - write_query: {"query": "INSERT INTO usuarios (nombre, email) VALUES ('Juan', 'juan@example.com')"}
+            - describe_table: {"table_name": "usuarios"}
+            - export_query: {"query": "SELECT * FROM usuarios", "format": "csv"}
+            - drop_table: {"table_name": "usuarios", "confirm": true}
+            - list_indexes: {"table_name": "usuarios"}
+            - describe_index: {"index_name": "idx_usuarios_email", "table_name": "usuarios"}
+            - search_in_database: {"search": "Juan"}
+            - append_insight: {"insight": "Ventas crecieron 20% en Q1"}
+        additionalProperties: true
       id:
         type: integer
         example: 1
+        title: ''
+        format: int32
   MCPResponse:
     type: object
     properties:
@@ -69,7 +108,21 @@ definitions:
         example: '2.0'
       result:
         type: object
-        description: Resultado de la operación
+        properties:
+          content:
+            type: array
+            items:
+              type: object
+              properties:
+                type:
+                  type: string
+                  example: text
+                text:
+                  type: string
+                  example: Registro insertado correctamente
+          isError:
+            type: boolean
+            example: false
       error:
         type: object
         description: Error, si ocurre
@@ -80,4 +133,4 @@ parameters: {}
 responses: {}
 securityDefinitions: {}
 security: []
-tags: [] 
+tags: []
