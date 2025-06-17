@@ -67,52 +67,13 @@ npm install
 npm run build
 ```
 
-## Uso
-
-### Nuevo sistema de argumentos nombrados (recomendado)
-
-Ahora puedes usar argumentos nombrados para mayor claridad y flexibilidad. Ejemplo para MySQL:
+4. (Opcional) Ejecutar el CLI directamente con npx (sin instalación global):
 
 ```bash
-node dist/index.js --mysql --host <host_mysql> --database <nombre_base_datos> --port <puerto> --user <usuario> --password "<contraseña>"
+npx -y @cagudelo/mcp-db-connect -- --sqlserver --host <host_sqlserver> --instance <nombre_instancia> --database <nombre_base_datos> --port <puerto> --user <usuario> --password <contraseña> --trustServerCertificate true
 ```
 
-Puedes usar los siguientes flags según el motor:
-- `--mysql`
-- `--sqlserver`
-- `--postgresql`
-- `--sqlite`
-
-#### Ejemplo para SQL Server:
-
-```bash
-node dist/index.js --sqlserver --host <host_sqlserver> --database <nombre_base_datos> --port <puerto> --user <usuario> --password "<contraseña>" --trustServerCertificate true
-```
-
-#### Ejemplo para PostgreSQL:
-
-```bash
-node dist/index.js --postgresql --host <host_postgres> --database <nombre_base_datos> --port <puerto> --user <usuario> --password "<contraseña>" --ssl true
-```
-
-#### Ejemplo para SQLite:
-
-```bash
-node dist/index.js --sqlite --path /ruta/a/tu/base.db
-```
-
-### ¿Cómo se procesan los argumentos?
-
-A partir de la versión actual, el proyecto utiliza la librería [`minimist`](https://www.npmjs.com/package/minimist) para procesar los argumentos de la línea de comandos. Esto permite que los argumentos sean nombrados y opcionales, facilitando la configuración y el uso del servidor.
-
-- El archivo principal (`src/index.ts`) importa y utiliza `minimist` para convertir los argumentos en un objeto fácil de usar.
-- Esto permite que los parámetros como `--host`, `--user`, `--password`, etc., sean reconocidos automáticamente.
-- Si quieres modificar o extender los argumentos soportados, revisa la sección donde se usa `minimist` en el código fuente.
-
-> **Nota:** Si usas TypeScript, asegúrate de instalar los tipos de minimist con:
-> ```bash
-> npm install --save-dev @types/minimist
-> ```
+> **Importante:** El doble guion `--` es necesario para que todos los argumentos sean pasados correctamente a tu script y no sean interpretados por npx.
 
 ## Configuración del MCP en el Editor
 
@@ -139,6 +100,7 @@ Para configurar mcp-db-connect en tu editor, edita el archivo de configuración 
         "/ruta/absoluta/a/mcp-db-connect/dist/index.js",
         "--sqlserver",
         "--host", "<host_sqlserver>",
+        "--instance", "<nombre_instancia>",
         "--database", "<nombre_base_datos>",
         "--port", "<puerto>",
         "--user", "<usuario>",
@@ -166,23 +128,76 @@ Para configurar mcp-db-connect en tu editor, edita el archivo de configuración 
         "--sqlite",
         "--path", "/ruta/a/tu/base.db"
       ]
+    },
+    "sqlserver-npx": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@cagudelo/mcp-db-connect",
+        "--",
+        "--sqlserver",
+        "--host", "<host_sqlserver>",
+        "--instance", "<nombre_instancia>",
+        "--database", "<nombre_base_datos>",
+        "--port", "<puerto>",
+        "--user", "<usuario>",
+        "--password", "<contraseña>",
+        "--trustServerCertificate", "true"
+      ]
     }
   }
 }
 ```
-> **Nota importante sobre contraseñas y caracteres especiales:**
->
-> Si tu contraseña (o cualquier argumento) contiene caracteres especiales como `|`, `*`, `&`, etc., ponla entre comillas al ejecutar el comando:
->
+> **Importante:** Si usas `npx` en la configuración del editor, asegúrate de incluir el argumento `--` antes de los parámetros de tu script y el flag `-y` para evitar preguntas interactivas. Esto previene errores de interpretación de argumentos.
+
+## Uso
+
+### Nuevo sistema de argumentos nombrados (recomendado)
+
+Ahora puedes usar argumentos nombrados para mayor claridad y flexibilidad. Ejemplo para MySQL:
+
+```bash
+node dist/index.js --mysql --host <host_mysql> --database <nombre_base_datos> --port <puerto> --user <usuario> --password "<contraseña>"
+```
+
+Puedes usar los siguientes flags según el motor:
+- `--mysql`
+- `--sqlserver`
+- `--postgresql`
+- `--sqlite`
+
+#### Ejemplo para SQL Server:
+
+```bash
+node dist/index.js --sqlserver --host <host_sqlserver> --instance <nombre_instancia> --database <nombre_base_datos> --port <puerto> --user <usuario> --password "<contraseña>" --trustServerCertificate true
+```
+
+> **Nota:** El parámetro `--instance` es opcional y solo se usa si necesitas conectarte a una instancia nombrada de SQL Server. Si no lo especificas, se conectará a la instancia predeterminada.
+
+#### Ejemplo para PostgreSQL:
+
+```bash
+node dist/index.js --postgresql --host <host_postgres> --database <nombre_base_datos> --port <puerto> --user <usuario> --password "<contraseña>" --ssl true
+```
+
+#### Ejemplo para SQLite:
+
+```bash
+node dist/index.js --sqlite --path /ruta/a/tu/base.db
+```
+
+### ¿Cómo se procesan los argumentos?
+
+A partir de la versión actual, el proyecto utiliza la librería [`minimist`](https://www.npmjs.com/package/minimist) para procesar los argumentos de la línea de comandos. Esto permite que los argumentos sean nombrados y opcionales, facilitando la configuración y el uso del servidor.
+
+- El archivo principal (`src/index.ts`) importa y utiliza `minimist` para convertir los argumentos en un objeto fácil de usar.
+- Esto permite que los parámetros como `--host`, `--user`, `--password`, etc., sean reconocidos automáticamente.
+- Si quieres modificar o extender los argumentos soportados, revisa la sección donde se usa `minimist` en el código fuente.
+
+> **Nota:** Si usas TypeScript, asegúrate de instalar los tipos de minimist con:
 > ```bash
-> node dist/index.js --mysql --password "MiContraseña|Con*Especiales"
+> npm install --save-dev @types/minimist
 > ```
->
-> Si configuras los argumentos en un editor o archivo y no puedes usar comillas, asegúrate de escapar los caracteres especiales según tu sistema operativo:
-> - En Linux/Mac: `MiContraseña\|Con\*Especiales`
-> - En Windows PowerShell: `MiContraseña`|Con`*Especiales`
->
-> Si la contraseña se pasa como un argumento separado (por ejemplo, en un array de argumentos), la terminal normalmente la tratará como un solo argumento, pero si tienes problemas, revisa la documentación de tu editor.
 
 ## Notas adicionales
 
@@ -248,15 +263,17 @@ Configura tu editor para usar el comando directamente:
 }
 ```
 
+
 ### Opción 2: Usar npx (sin instalación global)
 
-Puedes ejecutar el CLI directamente con npx:
+Puedes ejecutar el CLI directamente con npx. **IMPORTANTE:** Para evitar errores con los argumentos, agrega `--` antes de los parámetros de tu script:
 
 ```json
 "mysql": {
   "command": "npx",
   "args": [
     "@cagudelo/mcp-db-connect",
+    "--",
     "--mysql",
     "--host", "<host_mysql>",
     "--database", "<nombre_base_datos>",
@@ -267,12 +284,21 @@ Puedes ejecutar el CLI directamente con npx:
 }
 ```
 
+> **Nota:** Si ejecutas el comando desde la terminal, usa el doble guion `--` para separar los argumentos de npx y los de tu script. Ejemplo:
+>
+> ```bash
+> npx -y @cagudelo/mcp-db-connect -- --sqlserver --host <host_sqlserver> --instance <nombre_instancia> --database <nombre_base_datos> --port <puerto> --user <usuario> --password <contraseña> --trustServerCertificate true
+> ```
+
+Esto asegura que todos los argumentos sean interpretados correctamente por tu script y no por npx.
+
 
 ### Recomendaciones
 
 - **Para usuarios finales o equipos:** Instala globalmente y usa el comando (`mcp-db-connect`).
 - **Para pruebas rápidas:** Usa `npx @cagudelo/mcp-db-connect ...`.
 - **Para desarrollo local:** Usa la ruta directa al archivo.
+
 
 
 

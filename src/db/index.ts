@@ -20,6 +20,7 @@ export async function initDatabase(connectionInfo: any, dbType: string = 'sqlite
 }
 
 export function dbAll(query: string, params: any[] = []): Promise<any[]> {
+ // console.log("[dbAll] Query recibido:", query, "Params:", params);
   if (!dbAdapter) throw new Error("Database not initialized");
   return dbAdapter.all(query, params);
 }
