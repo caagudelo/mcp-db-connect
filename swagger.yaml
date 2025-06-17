@@ -1,0 +1,83 @@
+swagger: '2.0'
+info:
+  title: MCPTest
+  description: Conector MCP HTTP para bases de datos
+  version: '1.0'
+host: 7r2fqd47-3000.use2.devtunnels.ms
+basePath: /
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+  - text/event-stream
+paths:
+  /mcp:
+    post:
+      summary: Endpoint MCP principal
+      description: >
+        Endpoint para enviar comandos MCP (JSON-RPC 2.0). El body debe ser un
+        objeto JSON-RPC válido.
+      operationId: mcpCommand
+      consumes:
+        - application/json
+      produces:
+        - application/json
+        - text/event-stream
+      parameters:
+        - in: body
+          name: body
+          description: Objeto JSON-RPC 2.0
+          required: true
+          schema:
+            $ref: '#/definitions/MCPRequest'
+      responses:
+        '200':
+          description: Respuesta JSON-RPC o event-stream
+          schema:
+            $ref: '#/definitions/MCPResponse'
+        '405':
+          description: Método no permitido
+        '406':
+          description: Not Acceptable (cabeceras incorrectas)
+definitions:
+  MCPRequest:
+    type: object
+    required:
+      - jsonrpc
+      - method
+      - id
+    properties:
+      jsonrpc:
+        type: string
+        example: '2.0'
+      method:
+        type: string
+        example: tools/list
+      params:
+        type: object
+        description: Parámetros específicos del método
+      id:
+        type: integer
+        example: 1
+  MCPResponse:
+    type: object
+    properties:
+      jsonrpc:
+        type: string
+        example: '2.0'
+      result:
+        type: object
+        description: Resultado de la operación
+      error:
+        type: object
+        description: Error, si ocurre
+      id:
+        type: integer
+        example: 1
+parameters: {}
+responses: {}
+securityDefinitions: {}
+security: []
+tags: [] 
