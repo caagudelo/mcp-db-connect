@@ -5,7 +5,7 @@
  * @file index.ts
  * @description Servidor MCP (Model Context Protocol) para acceso a bases de datos
  * @version 1.0.0
- * @author Equipo de Desarrollo
+ * @author Camilo Andres Agudelo
  * 
  * Este servidor implementa un protocolo MCP que permite la interacción con diferentes
  * tipos de bases de datos (MySQL, SQL Server, PostgreSQL y SQLite) a través de una
@@ -43,6 +43,7 @@ import {
 } from './db/index.js';
 import minimist from 'minimist';
 import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -115,8 +116,100 @@ const server = new Server(
   },
 );
 
+// Cargar variables de entorno desde archivo .env
+dotenv.config();
+
+// Verificar si existe archivo .env y mostrar información útil
+const envPath = path.join(process.cwd(), '.env');
+const envExists = fs.existsSync(envPath);
+
+if (!envExists) {
+  console.log('📝 No se encontró archivo .env');
+  console.log('💡 Creando archivo .env de ejemplo...');
+  
+  const exampleEnvContent = `# Configuración de Base de Datos para mcp-db-connect
+# Copia este archivo como .env y configura tus valores
+
+# Tipo de base de datos (mysql, sqlserver, postgresql, sqlite)
+DB_TYPE=sqlserver
+
+# Configuración general de conexión
+DB_HOST=localhost
+DB_NAME=test
+DB_USER=sa
+DB_PASSWORD=tu_contraseña
+DB_PORT=1433
+
+# Configuración específica para SQL Server
+DB_INSTANCE=SQLEXPRESS
+
+# Configuración de seguridad
+DB_SSL=false
+DB_TRUST_SERVER_CERTIFICATE=true
+
+# Ejemplos para diferentes bases de datos:
+
+# MySQL
+# DB_TYPE=mysql
+# DB_HOST=localhost
+# DB_NAME=mi_base_datos
+# DB_USER=root
+# DB_PASSWORD=mi_contraseña
+# DB_PORT=3306
+# DB_SSL=false
+
+# PostgreSQL
+# DB_TYPE=postgresql
+# DB_HOST=localhost
+# DB_NAME=mi_base_datos
+# DB_USER=postgres
+# DB_PASSWORD=mi_contraseña
+# DB_PORT=5432
+# DB_SSL=false
+
+# SQLite
+# DB_TYPE=sqlite
+# DB_PATH=/ruta/completa/a/mi_base.db`;
+
+  try {
+    fs.writeFileSync(envPath, exampleEnvContent);
+    console.log('✅ Archivo .env creado exitosamente');
+    console.log('🔧 Edita el archivo .env con tu configuración real');
+    console.log('💡 Luego ejecuta: mcp-db-connect');
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Error al crear archivo .env:', error);
+    console.log('💡 Crea manualmente un archivo .env con tu configuración');
+  }
+}
+
 // Parsear argumentos de línea de comandos usando minimist
 const args = minimist(process.argv.slice(2));
+
+/**
+ * Obtiene el valor de configuración desde variables de entorno o argumentos
+ * Prioriza las variables de entorno sobre los argumentos de línea de comandos
+ * @param envKey - Clave de la variable de entorno
+ * @param argKey - Clave del argumento de línea de comandos
+ * @param defaultValue - Valor por defecto si no se encuentra
+ * @returns El valor de configuración
+ */
+function getConfigValue(envKey: string, argKey: string, defaultValue?: string): string | undefined {
+  // Primero intenta obtener desde variables de entorno
+  const envValue = process.env[envKey];
+  if (envValue !== undefined) {
+    return envValue;
+  }
+  
+  // Si no existe en variables de entorno, usa el argumento
+  const argValue = args[argKey];
+  if (argValue !== undefined && argValue !== true) {
+    return String(argValue);
+  }
+  
+  // Si no existe en ninguno, usa el valor por defecto
+  return defaultValue;
+}
 
 
 
@@ -129,25 +222,50 @@ if (args.help || args.h) {
   console.log(`
 mcp-db-connect - Servidor MCP para acceso a bases de datos
 
-Uso:
-  mcp-db-connect --mysql --host <host> --database <db> --port <puerto> --user <usuario> --password "<contraseña>"
-  mcp-db-connect --sqlserver --host <host> --instance <instancia> --database <db> --port <puerto> --user <usuario> --password "<contraseña>" --trustServerCertificate true
-  mcp-db-connect --postgresql --host <host> --database <db> --port <puerto> --user <usuario> --password "<contraseña>" --ssl true
-  mcp-db-connect --sqlite --path /ruta/a/tu/base.db
+CONFIGURACIÓN:
+  La aplicación puede configurarse usando variables de entorno (archivo .env) o argumentos de línea de comandos.
+  Las variables de entorno tienen prioridad sobre los argumentos.
 
-Opciones:
+VARIABLES DE ENTORNO (.env):
+  DB_TYPE                    Tipo de base de datos (mysql, sqlserver, postgresql, sqlite)
+  DB_HOST                    Host del servidor de base de datos
+  DB_NAME                    Nombre de la base de datos
+  DB_USER                    Usuario de la base de datos
+  DB_PASSWORD                Contraseña de la base de datos
+  DB_PORT                    Puerto de conexión
+  DB_PATH                    Ruta al archivo SQLite (solo para SQLite)
+  DB_INSTANCE                Nombre de la instancia de SQL Server (opcional)
+  DB_SSL                     Habilitar SSL (true/false)
+  DB_TRUST_SERVER_CERTIFICATE Trust server certificate para SQL Server (true/false)
+
+ARGUMENTOS DE LÍNEA DE COMANDOS:
   --mysql, --sqlserver, --postgresql, --sqlite   Selecciona el motor de base de datos
   --host         Host del servidor de base de datos
-  --instance     Nombre de la instancia de SQL Server (opcional)
   --database     Nombre de la base de datos
   --port         Puerto de conexión
   --user         Usuario de la base de datos
   --password     Contraseña de la base de datos
   --path         Ruta al archivo SQLite
+  --instance     Nombre de la instancia de SQL Server (opcional)
+  --ssl          Habilitar SSL (true/false)
+  --trustServerCertificate Trust server certificate para SQL Server (true/false)
   --help, -h     Muestra esta ayuda
 
-Ejemplo:
+EJEMPLOS:
+
+Usando variables de entorno (.env):
+  DB_TYPE=mysql
+  DB_HOST=localhost
+  DB_NAME=test
+  DB_USER=root
+  DB_PASSWORD=miClave
+  DB_PORT=3306
+
+Usando argumentos de línea de comandos:
   mcp-db-connect --mysql --host localhost --database test --port 3306 --user root --password "miClave"
+  mcp-db-connect --sqlserver --host localhost --instance SQLEXPRESS --database test --port 1433 --user sa --password "miClave" --trustServerCertificate true
+  mcp-db-connect --postgresql --host localhost --database test --port 5432 --user postgres --password "miClave" --ssl true
+  mcp-db-connect --sqlite --path /ruta/a/tu/base.db
   `);
   process.exit(0);
 }
@@ -155,45 +273,128 @@ Ejemplo:
 let dbType = '';
 let connectionInfo: any = {};
 
-if (args.mysql) {
-  dbType = 'mysql';
+// Determinar el tipo de base de datos desde variables de entorno o argumentos
+const dbTypeFromEnv = getConfigValue('DB_TYPE', 'db-type');
+const dbTypeFromArgs = args.mysql ? 'mysql' : args.sqlserver ? 'sqlserver' : args.postgresql ? 'postgresql' : args.sqlite ? 'sqlite' : null;
+
+console.log('Debug - dbTypeFromEnv:', dbTypeFromEnv);
+console.log('Debug - dbTypeFromArgs:', dbTypeFromArgs);
+
+dbType = dbTypeFromEnv || dbTypeFromArgs || '';
+
+console.log('Debug - dbType final:', dbType);
+
+if (!dbType) {
+  console.error('❌ Error: Tipo de base de datos no especificado');
+  console.error('');
+  console.error('📋 Opciones de configuración:');
+  console.error('   1. Crear un archivo .env con DB_TYPE=sqlserver');
+  console.error('   2. Usar argumentos: --sqlserver --host localhost --database test --user sa --password "tu_password"');
+  console.error('');
+  console.error('🔧 Ejemplo de archivo .env:');
+  console.error('   DB_TYPE=sqlserver');
+  console.error('   DB_HOST=localhost');
+  console.error('   DB_NAME=test');
+  console.error('   DB_USER=sa');
+  console.error('   DB_PASSWORD=tu_password');
+  console.error('   DB_INSTANCE=SQLEXPRESS');
+  console.error('');
+  console.error('💡 Para más información, ejecuta: mcp-db-connect --help');
+  throw new Error('Tipo de base de datos no especificado. Usa DB_TYPE en .env o --mysql, --sqlserver, --postgresql o --sqlite');
+}
+
+// Configurar la información de conexión según el tipo de base de datos
+console.log('Debug - Tipo de base de datos:', dbType);
+console.log('Debug - Argumentos recibidos:', JSON.stringify(args, null, 2));
+
+if (dbType === 'mysql') {
   connectionInfo = {
-    host: args.host,
-    database: args.database,
-    user: args.user,
-    password: String(args.password),
-    port: parseInt(args.port),
-    ssl: args.ssl === 'true'
+    host: getConfigValue('DB_HOST', 'host'),
+    database: getConfigValue('DB_NAME', 'database'),
+    user: getConfigValue('DB_USER', 'user'),
+    password: getConfigValue('DB_PASSWORD', 'password'),
+    port: parseInt(getConfigValue('DB_PORT', 'port') || '3306'),
+    ssl: getConfigValue('DB_SSL', 'ssl') === 'true'
   };
-} else if (args.sqlserver) {
-  dbType = 'sqlserver';
+} else if (dbType === 'sqlserver') {
+  const hostValue = getConfigValue('DB_HOST', 'host');
+  const databaseValue = getConfigValue('DB_NAME', 'database');
+  const userValue = getConfigValue('DB_USER', 'user');
+  const passwordValue = getConfigValue('DB_PASSWORD', 'password');
+  
+  console.log('Debug - SQL Server valores:', {
+    host: hostValue,
+    database: databaseValue,
+    user: userValue,
+    password: passwordValue ? '[HIDDEN]' : 'undefined'
+  });
+  
   connectionInfo = {
-    server: args.host,
-    database: args.database,
-    user: args.user,
-    password: String(args.password),
-    port: parseInt(args.port),
-    trustServerCertificate: args.trustServerCertificate === 'true',
+    server: hostValue,
+    database: databaseValue,
+    user: userValue,
+    password: passwordValue,
+    port: parseInt(getConfigValue('DB_PORT', 'port') || '1433'),
+    trustServerCertificate: getConfigValue('DB_TRUST_SERVER_CERTIFICATE', 'trustServerCertificate') === 'true',
     options: {}
   };
-  if (args.instance) {
-    connectionInfo.options.instanceName = args.instance;
+  
+  const instance = getConfigValue('DB_INSTANCE', 'instance');
+  if (instance) {
+    connectionInfo.options.instanceName = instance;
   }
-} else if (args.postgresql) {
-  dbType = 'postgresql';
+} else if (dbType === 'postgresql') {
   connectionInfo = {
-    host: args.host,
-    database: args.database,
-    user: args.user,
-    password: String(args.password),
-    port: parseInt(args.port),
-    ssl: args.ssl === 'true'
+    host: getConfigValue('DB_HOST', 'host'),
+    database: getConfigValue('DB_NAME', 'database'),
+    user: getConfigValue('DB_USER', 'user'),
+    password: getConfigValue('DB_PASSWORD', 'password'),
+    port: parseInt(getConfigValue('DB_PORT', 'port') || '5432'),
+    ssl: getConfigValue('DB_SSL', 'ssl') === 'true'
   };
-} else if (args.sqlite) {
-  dbType = 'sqlite';
-  connectionInfo = { path: args.path };
+} else if (dbType === 'sqlite') {
+  connectionInfo = { 
+    path: getConfigValue('DB_PATH', 'path') 
+  };
 } else {
-  throw new Error('Tipo de base de datos no soportado. Usa --mysql, --sqlserver, --postgresql o --sqlite');
+  throw new Error(`Tipo de base de datos no soportado: ${dbType}`);
+}
+
+// Validar que los campos requeridos estén presentes
+const requiredFields = dbType === 'sqlite' ? ['path'] : dbType === 'sqlserver' ? ['server', 'database', 'user', 'password'] : ['host', 'database', 'user', 'password'];
+
+console.log('Debug - Tipo de base de datos:', dbType);
+console.log('Debug - Campos requeridos:', requiredFields);
+console.log('Debug - Información de conexión:', JSON.stringify(connectionInfo, null, 2));
+
+for (const field of requiredFields) {
+  if (!connectionInfo[field]) {
+    console.error(`❌ Error: Campo requerido faltante: ${field}`);
+    console.error('');
+    console.error(`📋 Para ${dbType}, necesitas configurar:`);
+    if (dbType === 'sqlserver') {
+      console.error('   DB_HOST o --host (servidor SQL Server)');
+      console.error('   DB_NAME o --database (nombre de la base de datos)');
+      console.error('   DB_USER o --user (usuario)');
+      console.error('   DB_PASSWORD o --password (contraseña)');
+      console.error('   DB_INSTANCE o --instance (opcional, nombre de la instancia)');
+    } else if (dbType === 'mysql') {
+      console.error('   DB_HOST o --host (servidor MySQL)');
+      console.error('   DB_NAME o --database (nombre de la base de datos)');
+      console.error('   DB_USER o --user (usuario)');
+      console.error('   DB_PASSWORD o --password (contraseña)');
+    } else if (dbType === 'postgresql') {
+      console.error('   DB_HOST o --host (servidor PostgreSQL)');
+      console.error('   DB_NAME o --database (nombre de la base de datos)');
+      console.error('   DB_USER o --user (usuario)');
+      console.error('   DB_PASSWORD o --password (contraseña)');
+    } else if (dbType === 'sqlite') {
+      console.error('   DB_PATH o --path (ruta al archivo SQLite)');
+    }
+    console.error('');
+    console.error('💡 Para más información, ejecuta: mcp-db-connect --help');
+    throw new Error(`Campo requerido faltante: ${field}. Configúralo en .env o como argumento de línea de comandos.`);
+  }
 }
 
 /**

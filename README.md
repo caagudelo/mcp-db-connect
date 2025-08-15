@@ -43,6 +43,10 @@ Un servidor MCP (Model Context Protocol) que proporciona capacidades de acceso a
   - SQL Server
   - PostgreSQL
   - MySQL
+- **Nuevo:** Soporte para variables de entorno (.env) para configuración segura
+- **Nuevo:** Sistema de configuración híbrido (variables de entorno + argumentos de línea de comandos)
+- **Nuevo:** Creación automática de archivo .env de ejemplo
+- **Nuevo:** Validaciones robustas de configuración con mensajes informativos
 - Ejecución de consultas SQL (SELECT, INSERT, UPDATE, DELETE)
 - Creación y modificación de tablas
 - Exportación de resultados en formatos CSV y JSON
@@ -75,9 +79,206 @@ npx -y @cagudelo/mcp-db-connect -- --sqlserver --host <host_sqlserver> --instanc
 
 > **Importante:** El doble guion `--` es necesario para que todos los argumentos sean pasados correctamente a tu script y no sean interpretados por npx.
 
+## Configuración
+
+### 🆕 Sistema de Variables de Entorno (.env) - RECOMENDADO
+
+La nueva versión incluye soporte completo para variables de entorno, lo que hace la configuración más segura y fácil de gestionar.
+
+#### Configuración Automática
+
+1. **Ejecuta el servidor por primera vez:**
+   ```bash
+   npm start
+   ```
+
+2. **Se creará automáticamente un archivo `.env` de ejemplo** con esta estructura:
+   ```env
+   # Configuración de Base de Datos para mcp-db-connect
+   # Copia este archivo como .env y configura tus valores
+
+   # Tipo de base de datos (mysql, sqlserver, postgresql, sqlite)
+   DB_TYPE=sqlserver
+
+   # Configuración general de conexión
+   DB_HOST=localhost
+   DB_NAME=test
+   DB_USER=sa
+   DB_PASSWORD=tu_contraseña
+   DB_PORT=1433
+
+   # Configuración específica para SQL Server
+   DB_INSTANCE=SQLEXPRESS
+
+   # Configuración de seguridad
+   DB_SSL=false
+   DB_TRUST_SERVER_CERTIFICATE=true
+
+   # Ejemplos para diferentes bases de datos:
+
+   # MySQL
+   # DB_TYPE=mysql
+   # DB_HOST=localhost
+   # DB_NAME=mi_base_datos
+   # DB_USER=root
+   # DB_PASSWORD=mi_contraseña
+   # DB_PORT=3306
+   # DB_SSL=false
+
+   # PostgreSQL
+   # DB_TYPE=postgresql
+   # DB_HOST=localhost
+   # DB_NAME=mi_base_datos
+   # DB_USER=postgres
+   # DB_PASSWORD=mi_contraseña
+   # DB_PORT=5432
+   # DB_SSL=false
+
+   # SQLite
+   # DB_TYPE=sqlite
+   # DB_PATH=/ruta/completa/a/mi_base.db
+   ```
+
+3. **Edita el archivo `.env`** con tu configuración real
+4. **Ejecuta nuevamente:** `npm start`
+
+#### Variables de Entorno Disponibles
+
+| Variable | Descripción | Requerido | Ejemplo |
+|----------|-------------|-----------|---------|
+| `DB_TYPE` | Tipo de base de datos | ✅ | `mysql`, `sqlserver`, `postgresql`, `sqlite` |
+| `DB_HOST` | Host del servidor | ✅ (excepto SQLite) | `localhost`, `192.168.1.100` |
+| `DB_NAME` | Nombre de la base de datos | ✅ (excepto SQLite) | `test`, `production` |
+| `DB_USER` | Usuario de la base de datos | ✅ (excepto SQLite) | `root`, `sa`, `postgres` |
+| `DB_PASSWORD` | Contraseña de la base de datos | ✅ (excepto SQLite) | `mi_contraseña_segura` |
+| `DB_PORT` | Puerto de conexión | ❌ (usa valores por defecto) | `3306`, `1433`, `5432` |
+| `DB_PATH` | Ruta al archivo SQLite | ✅ (solo SQLite) | `/ruta/a/mi_base.db` |
+| `DB_INSTANCE` | Instancia de SQL Server | ❌ | `SQLEXPRESS`, `MSSQLSERVER` |
+| `DB_SSL` | Habilitar SSL | ❌ | `true`, `false` |
+| `DB_TRUST_SERVER_CERTIFICATE` | Trust server certificate (SQL Server) | ❌ | `true`, `false` |
+
+#### Ejemplos de Configuración por Tipo de Base de Datos
+
+**MySQL:**
+```env
+DB_TYPE=mysql
+DB_HOST=localhost
+DB_NAME=mi_base_datos
+DB_USER=root
+DB_PASSWORD=mi_contraseña
+DB_PORT=3306
+DB_SSL=false
+```
+
+**SQL Server:**
+```env
+DB_TYPE=sqlserver
+DB_HOST=localhost
+DB_NAME=test
+DB_USER=sa
+DB_PASSWORD=mi_contraseña
+DB_PORT=1433
+DB_INSTANCE=SQLEXPRESS
+DB_TRUST_SERVER_CERTIFICATE=true
+```
+
+**PostgreSQL:**
+```env
+DB_TYPE=postgresql
+DB_HOST=localhost
+DB_NAME=mi_base_datos
+DB_USER=postgres
+DB_PASSWORD=mi_contraseña
+DB_PORT=5432
+DB_SSL=true
+```
+
+**SQLite:**
+```env
+DB_TYPE=sqlite
+DB_PATH=/ruta/completa/a/mi_base.db
+```
+
+### Sistema de Argumentos de Línea de Comandos
+
+También puedes seguir usando argumentos de línea de comandos como antes:
+
+#### Argumentos Disponibles
+
+| Argumento | Descripción | Requerido | Ejemplo |
+|-----------|-------------|-----------|---------|
+| `--mysql` | Seleccionar MySQL | ✅ (uno de los tipos) | `--mysql` |
+| `--sqlserver` | Seleccionar SQL Server | ✅ (uno de los tipos) | `--sqlserver` |
+| `--postgresql` | Seleccionar PostgreSQL | ✅ (uno de los tipos) | `--postgresql` |
+| `--sqlite` | Seleccionar SQLite | ✅ (uno de los tipos) | `--sqlite` |
+| `--host` | Host del servidor | ✅ (excepto SQLite) | `--host localhost` |
+| `--database` | Nombre de la base de datos | ✅ (excepto SQLite) | `--database test` |
+| `--user` | Usuario de la base de datos | ✅ (excepto SQLite) | `--user root` |
+| `--password` | Contraseña de la base de datos | ✅ (excepto SQLite) | `--password "mi_clave"` |
+| `--port` | Puerto de conexión | ❌ | `--port 3306` |
+| `--path` | Ruta al archivo SQLite | ✅ (solo SQLite) | `--path /ruta/a/base.db` |
+| `--instance` | Instancia de SQL Server | ❌ | `--instance SQLEXPRESS` |
+| `--ssl` | Habilitar SSL | ❌ | `--ssl true` |
+| `--trustServerCertificate` | Trust server certificate (SQL Server) | ❌ | `--trustServerCertificate true` |
+
+#### Ejemplos de Uso con Argumentos
+
+**MySQL:**
+```bash
+node dist/index.js --mysql --host localhost --database test --port 3306 --user root --password "miClave"
+```
+
+**SQL Server:**
+```bash
+node dist/index.js --sqlserver --host localhost --instance SQLEXPRESS --database test --port 1433 --user sa --password "miClave" --trustServerCertificate true
+```
+
+**PostgreSQL:**
+```bash
+node dist/index.js --postgresql --host localhost --database test --port 5432 --user postgres --password "miClave" --ssl true
+```
+
+**SQLite:**
+```bash
+node dist/index.js --sqlite --path /ruta/a/tu/base.db
+```
+
+### 🎯 Prioridad de Configuración
+
+El sistema utiliza un orden de prioridad inteligente:
+
+1. **Variables de entorno (.env)** - Máxima prioridad
+2. **Argumentos de línea de comandos** - Prioridad media
+3. **Valores por defecto** - Prioridad mínima
+
+Esto significa que puedes:
+- Usar solo variables de entorno (más seguro)
+- Usar solo argumentos de línea de comandos (más flexible)
+- Combinar ambos (variables de entorno como base, argumentos para sobrescribir)
+
 ## Configuración del MCP en el Editor
 
-Para configurar mcp-db-connect en tu editor, edita el archivo de configuración de Claude Desktop. Ejemplo moderno para MySQL:
+### Configuración con Variables de Entorno (Recomendado)
+
+1. **Crea un archivo `.env`** en tu directorio de trabajo con tu configuración
+2. **Configura tu editor** para usar solo el comando sin argumentos:
+
+```json
+{
+  "mcpServers": {
+    "mysql": {
+      "command": "node",
+      "args": [
+        "/ruta/absoluta/a/mcp-db-connect/dist/index.js"
+      ]
+    }
+  }
+}
+```
+
+### Configuración con Argumentos de Línea de Comandos
+
+Si prefieres usar argumentos, aquí tienes ejemplos para cada tipo de base de datos:
 
 ```json
 {
@@ -128,82 +329,193 @@ Para configurar mcp-db-connect en tu editor, edita el archivo de configuración 
         "--sqlite",
         "--path", "/ruta/a/tu/base.db"
       ]
-    },
-    "sqlserver-npx": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@cagudelo/mcp-db-connect",
-        "--",
-        "--sqlserver",
-        "--host", "<host_sqlserver>",
-        "--instance", "<nombre_instancia>",
-        "--database", "<nombre_base_datos>",
-        "--port", "<puerto>",
-        "--user", "<usuario>",
-        "--password", "<contraseña>",
-        "--trustServerCertificate", "true"
-      ]
     }
   }
 }
 ```
-> **Importante:** Si usas `npx` en la configuración del editor, asegúrate de incluir el argumento `--` antes de los parámetros de tu script y el flag `-y` para evitar preguntas interactivas. Esto previene errores de interpretación de argumentos.
+
+### Configuración con npx
+
+Si usas `npx` en la configuración del editor, asegúrate de incluir el argumento `--` antes de los parámetros:
+
+```json
+"sqlserver-npx": {
+  "command": "npx",
+  "args": [
+    "-y",
+    "@cagudelo/mcp-db-connect",
+    "--",
+    "--sqlserver",
+    "--host", "<host_sqlserver>",
+    "--instance", "<nombre_instancia>",
+    "--database", "<nombre_base_datos>",
+    "--port", "<puerto>",
+    "--user", "<usuario>",
+    "--password", "<contraseña>",
+    "--trustServerCertificate", "true"
+  ]
+}
+```
+
+> **Importante:** Si usas `npx` en la configuración del editor, asegúrate de incluir el argumento `--` antes de los parámetros de tu script y el flag `-y` para evitar preguntas interactivas.
+
+### 🆕 Configuración con Variables de Entorno Directas en el Editor
+
+**NUEVA FUNCIONALIDAD:** Puedes configurar las variables de entorno directamente en la configuración del editor usando la propiedad `env`. Esto es especialmente útil cuando:
+
+- Quieres mantener toda la configuración en un solo lugar
+- No quieres crear archivos `.env` separados
+- Necesitas diferentes configuraciones para diferentes entornos de desarrollo
+- Quieres que la configuración sea portable entre equipos
+
+#### Ejemplo de Configuración con `env`:
+
+```json
+{
+  "mcpServers": {
+    "sqlserverdev": {
+      "command": "node",
+      "args": [
+        "E:/Equipo/Documentos/GitHub/mcp-db-connect/dist/index.js"
+      ],
+      "env": {
+        "DB_TYPE": "sqlserver",
+        "DB_HOST": "ROCKA",
+        "DB_NAME": "db_test",
+        "DB_USER": "sa",
+        "DB_PASSWORD": "12345",
+        "DB_PORT": "1433",
+        "DB_INSTANCE": "PRB0",
+        "DB_TRUST_SERVER_CERTIFICATE": "true"
+      }
+    },
+    "mysqldev": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@cagudelo/mcp-db-connect"
+      ],
+      "env": {
+        "DB_TYPE": "mysql",
+        "DB_HOST": "localhost",
+        "DB_NAME": "test_db",
+        "DB_USER": "root",
+        "DB_PASSWORD": "mi_contraseña",
+        "DB_PORT": "3306",
+        "DB_SSL": "false"
+      }
+    },
+    "postgresqldev": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@cagudelo/mcp-db-connect"
+      ],
+      "env": {
+        "DB_TYPE": "postgresql",
+        "DB_HOST": "localhost",
+        "DB_NAME": "test_db",
+        "DB_USER": "postgres",
+        "DB_PASSWORD": "mi_contraseña",
+        "DB_PORT": "5432",
+        "DB_SSL": "true"
+      }
+    },
+    "sqlitedev": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@cagudelo/mcp-db-connect"
+      ],
+      "env": {
+        "DB_TYPE": "sqlite",
+        "DB_PATH": "E:/Equipo/Documentos/GitHub/mcp-db-connect/test.db"
+      }
+    }
+  }
+}
+```
+
+#### Ventajas de usar `env` en la configuración del editor:
+
+✅ **Configuración centralizada**: Todo en un solo archivo de configuración
+✅ **Portabilidad**: Fácil de compartir entre equipos (sin credenciales reales)
+✅ **Múltiples entornos**: Puedes tener configuraciones para dev, staging, production
+✅ **Sin archivos externos**: No necesitas crear archivos `.env` separados
+✅ **Control de versiones**: Puedes versionar la estructura (sin credenciales reales)
+✅ **Fácil switching**: Cambiar entre configuraciones es solo cambiar el servidor MCP
+
+#### Consideraciones de Seguridad:
+
+⚠️ **IMPORTANTE**: Si usas esta configuración en un repositorio compartido:
+1. **NUNCA incluyas contraseñas reales** en el control de versiones
+2. **Usa contraseñas de ejemplo** o placeholders
+3. **Documenta** qué valores deben ser reemplazados
+4. **Considera usar variables de entorno del sistema** para credenciales sensibles
+
+#### Ejemplo de Configuración Segura para Control de Versiones:
+
+```json
+{
+  "mcpServers": {
+    "sqlserver-template": {
+      "command": "node",
+      "args": [
+        "E:/Equipo/Documentos/GitHub/mcp-db-connect/dist/index.js"
+      ],
+      "env": {
+        "DB_TYPE": "sqlserver",
+        "DB_HOST": "YOUR_SERVER_NAME",
+        "DB_NAME": "YOUR_DATABASE_NAME",
+        "DB_USER": "YOUR_USERNAME",
+        "DB_PASSWORD": "YOUR_PASSWORD",
+        "DB_PORT": "1433",
+        "DB_INSTANCE": "YOUR_INSTANCE_NAME",
+        "DB_TRUST_SERVER_CERTIFICATE": "true"
+      }
+    }
+  }
+}
+```
+
+#### Comparación de Métodos de Configuración:
+
+| Método | Ventajas | Desventajas | Uso Recomendado |
+|--------|----------|-------------|-----------------|
+| **Variables de entorno (.env)** | ✅ Seguro, fácil de gestionar | ❌ Archivo separado | Producción, desarrollo individual |
+| **Propiedad `env` en editor** | ✅ Centralizado, portable | ⚠️ Riesgo de commitear credenciales | Desarrollo en equipo, múltiples entornos |
+| **Argumentos de línea de comandos** | ✅ Flexible, sin archivos | ❌ Difícil de gestionar, menos seguro | Pruebas rápidas, scripts |
+| **Combinación híbrida** | ✅ Máxima flexibilidad | ❌ Puede ser confuso | Configuraciones complejas |
 
 ## Uso
 
-### Nuevo sistema de argumentos nombrados (recomendado)
+### Comandos de Ayuda
 
-Ahora puedes usar argumentos nombrados para mayor claridad y flexibilidad. Ejemplo para MySQL:
-
+**Ver versión:**
 ```bash
-node dist/index.js --mysql --host <host_mysql> --database <nombre_base_datos> --port <puerto> --user <usuario> --password "<contraseña>"
+npm start -- --version
+# o
+npm start -- -v
 ```
 
-Puedes usar los siguientes flags según el motor:
-- `--mysql`
-- `--sqlserver`
-- `--postgresql`
-- `--sqlite`
-
-#### Ejemplo para SQL Server:
-
+**Ver ayuda completa:**
 ```bash
-node dist/index.js --sqlserver --host <host_sqlserver> --instance <nombre_instancia> --database <nombre_base_datos> --port <puerto> --user <usuario> --password "<contraseña>" --trustServerCertificate true
+npm start -- --help
+# o
+npm start -- -h
 ```
 
-> **Nota:** El parámetro `--instance` es opcional y solo se usa si necesitas conectarte a una instancia nombrada de SQL Server. Si no lo especificas, se conectará a la instancia predeterminada.
+### Ejecución del Servidor
 
-#### Ejemplo para PostgreSQL:
-
+**Con variables de entorno (recomendado):**
 ```bash
-node dist/index.js --postgresql --host <host_postgres> --database <nombre_base_datos> --port <puerto> --user <usuario> --password "<contraseña>" --ssl true
+npm start
 ```
 
-#### Ejemplo para SQLite:
-
+**Con argumentos de línea de comandos:**
 ```bash
-node dist/index.js --sqlite --path /ruta/a/tu/base.db
+npm start -- --sqlserver --host localhost --database test --user sa --password "tu_password"
 ```
-
-### ¿Cómo se procesan los argumentos?
-
-A partir de la versión actual, el proyecto utiliza la librería [`minimist`](https://www.npmjs.com/package/minimist) para procesar los argumentos de la línea de comandos. Esto permite que los argumentos sean nombrados y opcionales, facilitando la configuración y el uso del servidor.
-
-- El archivo principal (`src/index.ts`) importa y utiliza `minimist` para convertir los argumentos en un objeto fácil de usar.
-- Esto permite que los parámetros como `--host`, `--user`, `--password`, etc., sean reconocidos automáticamente.
-- Si quieres modificar o extender los argumentos soportados, revisa la sección donde se usa `minimist` en el código fuente.
-
-> **Nota:** Si usas TypeScript, asegúrate de instalar los tipos de minimist con:
-> ```bash
-> npm install --save-dev @types/minimist
-> ```
-
-## Notas adicionales
-
-- Puedes seguir usando el sistema antiguo de argumentos posicionales, pero se recomienda el uso de argumentos nombrados para mayor claridad y seguridad.
-- Mantén seguras tus contraseñas y evita compartir archivos de configuración con datos sensibles.
-- Considera el uso de variables de entorno o archivos de configuración seguros para manejar contraseñas en entornos de producción.
 
 ## Herramientas Disponibles
 
@@ -226,7 +538,6 @@ A partir de la versión actual, el proyecto utiliza la librería [`minimist`](ht
 | `describe_index` | Ver la definición de un índice específico | `index_name`: Nombre del índice<br>`table_name` (opcional): Nombre de la tabla |
 | `search_in_database` | Buscar un valor en todas las tablas y columnas de la base de datos | `search`: Valor a buscar |
 
-
 ## Desarrollo
 
 Para ejecutar el servidor en modo desarrollo:
@@ -239,7 +550,27 @@ npm run dev
 
 Puedes configurar el CLI en tu editor de diferentes maneras, según tus necesidades y preferencias:
 
-### Opción 1: Usar el comando global (recomendado)
+### 🆕 Opción 1: Usar Variables de Entorno (.env) - RECOMENDADO
+
+1. **Crea un archivo `.env`** en tu directorio de trabajo
+2. **Configura tu editor** para usar solo el comando:
+
+```json
+"mysql": {
+  "command": "node",
+  "args": [
+    "/ruta/absoluta/a/mcp-db-connect/dist/index.js"
+  ]
+}
+```
+
+**Ventajas:**
+- ✅ Más seguro (contraseñas no en comandos)
+- ✅ Fácil de gestionar múltiples configuraciones
+- ✅ No hay riesgo de exponer credenciales en logs
+- ✅ Configuración centralizada
+
+### Opción 2: Usar el comando global
 
 Instala el paquete globalmente:
 
@@ -263,8 +594,7 @@ Configura tu editor para usar el comando directamente:
 }
 ```
 
-
-### Opción 2: Usar npx (sin instalación global)
+### Opción 3: Usar npx (sin instalación global)
 
 Puedes ejecutar el CLI directamente con npx. **IMPORTANTE:** Para evitar errores con los argumentos, agrega `--` antes de los parámetros de tu script:
 
@@ -292,12 +622,14 @@ Puedes ejecutar el CLI directamente con npx. **IMPORTANTE:** Para evitar errores
 
 Esto asegura que todos los argumentos sean interpretados correctamente por tu script y no por npx.
 
-
 ### Recomendaciones
 
-- **Para usuarios finales o equipos:** Instala globalmente y usa el comando (`mcp-db-connect`).
-- **Para pruebas rápidas:** Usa `npx @cagudelo/mcp-db-connect ...`.
-- **Para desarrollo local:** Usa la ruta directa al archivo.
+- **🆕 Para usuarios finales o equipos:** Usa variables de entorno (.env) - más seguro y fácil de gestionar
+- **Para usuarios avanzados:** Instala globalmente y usa el comando (`mcp-db-connect`)
+- **Para pruebas rápidas:** Usa `npx @cagudelo/mcp-db-connect ...`
+- **Para desarrollo local:** Usa la ruta directa al archivo
+
+
 
 
 
