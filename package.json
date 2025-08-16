@@ -12,10 +12,12 @@
   },
   "scripts": {
     "build": "tsc",
+    "build:win": "tsc && if exist .env copy .env dist\\.env",
+    "build:unix": "tsc && cp .env dist/.env && chmod 775 dist/server-sse.js",
     "start": "node dist/index.js",
-    "start:http": "node dist/server-express.js",
+    "start:sse": "node dist/server-sse.js",
     "dev": "tsx src/index.ts",
-    "dev:http": "tsx src/server-express.ts",
+    "dev:sse": "tsx src/server-sse.ts",
     "watch": "tsc -w",
     "clean": "rimraf dist",
     "prepublishOnly": "npm run clean && npm run build"

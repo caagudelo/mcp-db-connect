@@ -61,6 +61,24 @@ export interface Tool {
   };
 }
 
+// Tipo para herramientas MCP con Zod schema
+export interface McpTool<T = any> {
+  /** Nombre de la herramienta */
+  name: string;
+  /** Descripción de la herramienta */
+  description: string;
+  /** Esquema Zod para validación de parámetros */
+  schema: T;
+  /** Función que maneja la ejecución de la herramienta */
+  handler: (params: any, extra?: any) => Promise<{
+    content: Array<{ type: string; text: string }>;
+    isError: boolean;
+  }>;
+}
+
+// Alias para compatibilidad
+export type tool<T> = McpTool<T>;
+
 // Tipos para los recursos de la base de datos
 /**
  * Recurso de base de datos
