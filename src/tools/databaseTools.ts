@@ -437,6 +437,52 @@ const exportToCSV: tool<{
   }
 };
 
+// Herramienta: export_query - Para exportar resultados de consultas
+const exportQuery: tool<{
+  query: z.ZodString;
+  format: z.ZodEnum<["csv", "json"]>;
+}> = {
+  name: "export_query",
+  description: "Exportar resultados de una consulta",
+  schema: {
+    query: z.string().describe("Consulta SQL SELECT"),
+    format: z.enum(["csv", "json"]).describe("Formato de exportación (csv o json)")
+  },
+  handler: async ({ query, format }) => {
+    try {
+      if (!isSelectQuery(query)) {
+        throw new Error("Solo se permiten consultas SELECT para exportar");
+      }
+      const result = await dbAll(query);
+
+      if (format === 'csv') {
+        const csvContent = convertToCSV(result);
+        return {
+          content: [
+            { type: "text", text: csvContent }
+          ],
+          isError: false
+        };
+      } else if (format === 'json') {
+        return {
+          content: [
+            { type: "text", text: JSON.stringify(result, null, 2) }
+          ],
+          isError: false
+        };
+      }
+      throw new Error('Formato de exportación no soportado');
+    } catch (e: any) {
+      return {
+        content: [
+          { type: "text", text: e.message }
+        ],
+        isError: true
+      };
+    }
+  }
+};
+
 // Exportar todas las herramientas de base de datos
 export const databaseTools = [
   readQuery,
@@ -452,5 +498,6 @@ export const databaseTools = [
   listIndexes,
   describeIndex,
   searchInDatabase,
-  exportToCSV
+  exportToCSV,
+  exportQuery
 ];

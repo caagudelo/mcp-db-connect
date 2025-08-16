@@ -124,5 +124,6 @@ export const registerExampleTools = (server: any) => {
     server.tool(tool.name, tool.description, tool.schema, tool.handler);
   });
   
-  console.log(`✅ Registradas ${exampleTools.length} herramientas de ejemplo`);
+  // Log solo a archivo, no a stdio
+  // console.log(`✅ Registradas ${exampleTools.length} herramientas de ejemplo`);
 };
