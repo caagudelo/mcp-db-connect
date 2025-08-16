@@ -1,6 +1,12 @@
 import { z } from "zod";
 import { tool } from "../types/index.js";
 import { getDatabaseMetadata } from "../db/index.js";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Herramienta: get_database_info - Para obtener información de la base de datos
 const getDatabaseInfo: tool<{}> = {
@@ -54,22 +60,59 @@ const ping: tool<{}> = {
 // Herramienta: get_server_version - Para obtener la versión del servidor
 const getServerVersion: tool<{}> = {
   name: "get_server_version",
-  description: "Obtiene la versión actual del servidor MCP",
+  description: "Obtiene la versión actual del servidor MCP y información del autor",
   schema: {},
   handler: async () => {
     try {
-      // Aquí podrías obtener la versión desde package.json
-      const version = "1.0.0"; // Por ahora hardcodeado
+      // Obtener la información desde package.json
+      const packageJsonPath = path.join(__dirname, '..', '..', 'package.json');
+      let version = 'desconocida';
+      let authorInfo = 'Información del autor no disponible';
+      
+      try {
+        const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+        
+        // Obtener versión
+        version = pkg.version || 'desconocida';
+        
+        // Obtener información del autor
+        if (pkg.author) {
+          if (typeof pkg.author === 'object') {
+            // Formato objeto: { name, email, url }
+            const author = pkg.author;
+            const authorParts = [];
+            
+            if (author.name) authorParts.push(author.name);
+            if (author.email) authorParts.push(author.email);
+            if (author.url) authorParts.push(author.url);
+            
+            authorInfo = authorParts.join(' | ');
+          } else {
+            // Formato string: "Nombre <email> <url>"
+            authorInfo = pkg.author;
+          }
+        }
+        
+      } catch (e) {
+        // Si falla la lectura, usar valores por defecto
+        version = 'desconocida';
+        authorInfo = 'Información del autor no disponible';
+      }
+      
       return {
         content: [
-          { type: "text", text: `Versión del servidor MCP: ${version}` }
+          { type: "text", text: `🚀 Servidor MCP: mcp-db-connect` },
+          { type: "text", text: `📦 Versión: ${version}` },
+          { type: "text", text: `👨‍💻 Autor: ${authorInfo}` },
+          { type: "text", text: `📄 Descripción: Servidor MCP para acceso a bases de datos` },
+          { type: "text", text: `🔗 Repositorio: https://github.com/cagudelo/mcp-db-connect` }
         ],
         isError: false
       };
     } catch (e: any) {
       return {
         content: [
-          { type: "text", text: e.message }
+          { type: "text", text: `Error al obtener información: ${e.message}` }
         ],
         isError: true
       };

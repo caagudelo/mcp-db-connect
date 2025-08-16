@@ -30,7 +30,18 @@
     "postgresql",
     "mysql"
   ],
-  "author": "Camilo Andres Agudelo <andres18160@gmail.com> <www.cagudelo.com>",
+  "author": {
+    "name": "Camilo Andres Agudelo",
+    "email": "andres18160@gmail.com"
+  },
+  "homepage": "https://github.com/caagudelo/mcp-db-connect#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/caagudelo/mcp-db-connect.git"
+  },
+  "bugs": {
+    "url": "https://github.com/caagudelo/mcp-db-connect/issues"
+  },
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.1",
