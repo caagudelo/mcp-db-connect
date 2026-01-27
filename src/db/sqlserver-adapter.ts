@@ -15,6 +15,7 @@ export class SqlServerAdapter implements DbAdapter {
     port?: number;
     trustServerCertificate?: boolean;
     options?: any;
+    authentication?: any;
   }) {
     this.server = connectionInfo.server;
     this.database = connectionInfo.database;
@@ -27,10 +28,14 @@ export class SqlServerAdapter implements DbAdapter {
         ...connectionInfo.options
       }
     };
-    if (connectionInfo.user && connectionInfo.password) {
+    if (connectionInfo.authentication) {
+      // Soporte robusto para autenticación integrada (NTLM)
+      (this.config as any).authentication = connectionInfo.authentication;
+    } else if (connectionInfo.user && connectionInfo.password) {
       this.config.user = connectionInfo.user;
       this.config.password = connectionInfo.password;
     } else {
+      // Fallback legacy: trustedConnection para compatibilidad antigua
       this.config.options!.trustedConnection = true;
       this.config.options!.enableArithAbort = true;
     }

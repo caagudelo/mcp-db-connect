@@ -657,7 +657,33 @@ mcp-db-connect --sqlserver --host localhost --database NombreDeTuBase --port 143
 
 No incluyas los flags `--user` ni `--password`.
 
-## Notas:
+## Ejemplo de uso: Seguridad integrada de Windows (SQL Server)
+
+Supón que quieres conectarte a SQL Server usando la autenticación integrada de Windows (sin usuario ni contraseña, usando la cuenta de Windows que ejecuta el proceso):
+
+### 1. Configuración en `.env`
+
+```
+DB_TYPE=sqlserver
+DB_HOST=localhost
+DB_NAME=MiBaseDeDatos
+DB_PORT=1433
+DB_INSTANCE=SQLEXPRESS         # Opcional, si usas instancia nombrada
+DB_TRUST_SERVER_CERTIFICATE=true
+DB_INTEGRATED_SECURITY=true    # <--- Habilita autenticación integrada
+```
+
+No incluyas `DB_USER` ni `DB_PASSWORD`.
+
+### 2. Ejecución por línea de comandos
+
+```
+npx mcp-db-connect --sqlserver --host localhost --database MiBaseDeDatos --port 1433 --integratedSecurity true --trustServerCertificate true
+```
+
+No incluyas los flags `--user` ni `--password`.
+
+### Notas importantes
 - El proceso debe ejecutarse con un usuario de Windows que tenga permisos en SQL Server.
 - Si usas una instancia nombrada, especifica `DB_INSTANCE` o `--instance`.
 - Si necesitas un dominio específico, puedes ajustar la variable de entorno `USERDOMAIN` antes de ejecutar el proceso.
