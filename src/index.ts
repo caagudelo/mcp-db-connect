@@ -598,7 +598,13 @@ async function runServer() {
           tools: toolsList
         };
       } catch (error) {
-        logToFile('Error al obtener herramientas:', error);
+        if (error instanceof Error) {
+          logToFile('Error al obtener herramientas:', error.stack);
+          console.error('Error al obtener herramientas:', error.stack);
+        } else {
+          logToFile('Error al obtener herramientas:', error);
+          console.error('Error al obtener herramientas:', error);
+        }
         throw error;
       }
     });
@@ -626,7 +632,13 @@ async function runServer() {
         logToFile(`Resultado de herramienta ${tool.name}:`, JSON.stringify(result));
         return result;
       } catch (error) {
-        logToFile('Error al llamar herramienta:', error);
+        if (error instanceof Error) {
+          logToFile('Error al llamar herramienta:', error.stack);
+          console.error('Error al llamar herramienta:', error.stack);
+        } else {
+          logToFile('Error al llamar herramienta:', error);
+          console.error('Error al llamar herramienta:', error);
+        }
         return {
           content: [{ type: "text", text: `Error: ${error instanceof Error ? error.message : String(error)}` }],
           isError: true
@@ -639,7 +651,13 @@ async function runServer() {
     await server.connect(transport);
     logToFile('Servidor MCP iniciado y escuchando en stdio');
   } catch (error) {
-    logToFile('Error al iniciar el servidor:', error);
+    if (error instanceof Error) {
+      logToFile('Error al iniciar el servidor:', error.stack);
+      console.error('Error al iniciar el servidor:', error.stack);
+    } else {
+      logToFile('Error al iniciar el servidor:', error);
+      console.error('Error al iniciar el servidor:', error);
+    }
     process.exit(1);
   }
 }
