@@ -208,7 +208,21 @@ DB_TRUST_SERVER_CERTIFICATE=true
 }
 
 // Parsear argumentos de línea de comandos usando minimist
+
 const args = minimist(process.argv.slice(2));
+
+// Obtener si se usa autenticación integrada de Windows
+function getBooleanConfigValue(envKey: string, argKey: string, defaultValue = false): boolean {
+  const envValue = process.env[envKey];
+  if (envValue !== undefined) {
+    return envValue === 'true' || envValue === '1';
+  }
+  const argValue = args[argKey];
+  if (argValue !== undefined && argValue !== true) {
+    return argValue === 'true' || argValue === '1';
+  }
+  return defaultValue;
+}
 
 /**
  * Obtiene el valor de configuración desde variables de entorno o argumentos
@@ -331,6 +345,7 @@ if (!dbType) {
 debugLog('Tipo de base de datos:', dbType);
 debugLog('Argumentos recibidos:', JSON.stringify(args, null, 2));
 
+
 if (dbType === 'mysql') {
   connectionInfo = {
     host: getConfigValue('DB_HOST', 'host'),
@@ -345,27 +360,46 @@ if (dbType === 'mysql') {
   const databaseValue = getConfigValue('DB_NAME', 'database');
   const userValue = getConfigValue('DB_USER', 'user');
   const passwordValue = getConfigValue('DB_PASSWORD', 'password');
-  
+  const integratedSecurity = getBooleanConfigValue('DB_INTEGRATED_SECURITY', 'integratedSecurity');
   debugLog('SQL Server valores:', {
     host: hostValue,
     database: databaseValue,
     user: userValue,
-    password: passwordValue ? '[HIDDEN]' : 'undefined'
+    password: passwordValue ? '[HIDDEN]' : 'undefined',
+    integratedSecurity
   });
-  
-  connectionInfo = {
-    server: hostValue,
-    database: databaseValue,
-    user: userValue,
-    password: passwordValue,
-    port: parseInt(getConfigValue('DB_PORT', 'port') || '1433'),
-    trustServerCertificate: getConfigValue('DB_TRUST_SERVER_CERTIFICATE', 'trustServerCertificate') === 'true',
-    options: {}
-  };
-  
   const instance = getConfigValue('DB_INSTANCE', 'instance');
-  if (instance) {
-    connectionInfo.options.instanceName = instance;
+  if (integratedSecurity) {
+    connectionInfo = {
+      server: hostValue,
+      database: databaseValue,
+      port: parseInt(getConfigValue('DB_PORT', 'port') || '1433'),
+      options: {
+        trustServerCertificate: getConfigValue('DB_TRUST_SERVER_CERTIFICATE', 'trustServerCertificate') === 'true',
+        instanceName: instance || undefined
+      },
+      authentication: {
+        type: 'ntlm',
+        options: {
+          domain: process.env.USERDOMAIN || '',
+          userName: '', // Usar usuario actual
+          password: ''  // Usar usuario actual
+        }
+      }
+    };
+  } else {
+    connectionInfo = {
+      server: hostValue,
+      database: databaseValue,
+      user: userValue,
+      password: passwordValue,
+      port: parseInt(getConfigValue('DB_PORT', 'port') || '1433'),
+      trustServerCertificate: getConfigValue('DB_TRUST_SERVER_CERTIFICATE', 'trustServerCertificate') === 'true',
+      options: {}
+    };
+    if (instance) {
+      connectionInfo.options.instanceName = instance;
+    }
   }
 } else if (dbType === 'postgresql') {
   connectionInfo = {
@@ -384,8 +418,21 @@ if (dbType === 'mysql') {
   throw new Error(`Tipo de base de datos no soportado: ${dbType}`);
 }
 
+
 // Validar que los campos requeridos estén presentes
-const requiredFields = dbType === 'sqlite' ? ['path'] : dbType === 'sqlserver' ? ['server', 'database', 'user', 'password'] : ['host', 'database', 'user', 'password'];
+let requiredFields: string[] = [];
+if (dbType === 'sqlite') {
+  requiredFields = ['path'];
+} else if (dbType === 'sqlserver') {
+  const integratedSecurity = getBooleanConfigValue('DB_INTEGRATED_SECURITY', 'integratedSecurity');
+  if (integratedSecurity) {
+    requiredFields = ['server', 'database']; // No requiere user/password
+  } else {
+    requiredFields = ['server', 'database', 'user', 'password'];
+  }
+} else {
+  requiredFields = ['host', 'database', 'user', 'password'];
+}
 
 debugLog('Tipo de base de datos:', dbType);
 debugLog('Campos requeridos:', requiredFields);
@@ -397,11 +444,19 @@ for (const field of requiredFields) {
     debugLog('');
     debugLog(`Para ${dbType}, necesitas configurar:`);
     if (dbType === 'sqlserver') {
-      debugLog('   DB_HOST o --host (servidor SQL Server)');
-      debugLog('   DB_NAME o --database (nombre de la base de datos)');
-      debugLog('   DB_USER o --user (usuario)');
-      debugLog('   DB_PASSWORD o --password (contraseña)');
-      debugLog('   DB_INSTANCE o --instance (opcional, nombre de la instancia)');
+      const integratedSecurity = getBooleanConfigValue('DB_INTEGRATED_SECURITY', 'integratedSecurity');
+      if (integratedSecurity) {
+        debugLog('   DB_HOST o --host (servidor SQL Server)');
+        debugLog('   DB_NAME o --database (nombre de la base de datos)');
+        debugLog('   DB_INSTANCE o --instance (opcional, nombre de la instancia)');
+        debugLog('   DB_INTEGRATED_SECURITY=true o --integratedSecurity true (autenticación integrada de Windows)');
+      } else {
+        debugLog('   DB_HOST o --host (servidor SQL Server)');
+        debugLog('   DB_NAME o --database (nombre de la base de datos)');
+        debugLog('   DB_USER o --user (usuario)');
+        debugLog('   DB_PASSWORD o --password (contraseña)');
+        debugLog('   DB_INSTANCE o --instance (opcional, nombre de la instancia)');
+      }
     } else if (dbType === 'mysql') {
       debugLog('   DB_HOST o --host (servidor MySQL)');
       debugLog('   DB_NAME o --database (nombre de la base de datos)');

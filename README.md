@@ -156,6 +156,7 @@ La nueva versión incluye soporte completo para variables de entorno, lo que hac
 | `DB_INSTANCE` | Instancia de SQL Server | ❌ | `SQLEXPRESS`, `MSSQLSERVER` |
 | `DB_SSL` | Habilitar SSL | ❌ | `true`, `false` |
 | `DB_TRUST_SERVER_CERTIFICATE` | Trust server certificate (SQL Server) | ❌ | `true`, `false` |
+| `DB_INTEGRATED_SECURITY` | Habilitar autenticación integrada de Windows (SQL Server) | ❌ | `true`, `false` |
 
 #### Ejemplos de Configuración por Tipo de Base de Datos
 
@@ -220,6 +221,7 @@ También puedes seguir usando argumentos de línea de comandos como antes:
 | `--instance` | Instancia de SQL Server | ❌ | `--instance SQLEXPRESS` |
 | `--ssl` | Habilitar SSL | ❌ | `--ssl true` |
 | `--trustServerCertificate` | Trust server certificate (SQL Server) | ❌ | `--trustServerCertificate true` |
+| `--integratedSecurity` | Habilitar autenticación integrada de Windows (SQL Server) | ❌ | `--integratedSecurity true` |
 
 #### Ejemplos de Uso con Argumentos
 
@@ -628,6 +630,39 @@ Esto asegura que todos los argumentos sean interpretados correctamente por tu sc
 - **Para usuarios avanzados:** Instala globalmente y usa el comando (`mcp-db-connect`)
 - **Para pruebas rápidas:** Usa `npx @cagudelo/mcp-db-connect ...`
 - **Para desarrollo local:** Usa la ruta directa al archivo
+
+# Autenticación integrada de Windows (SQL Server)
+
+Si deseas conectarte a SQL Server usando la cuenta de Windows que ejecuta el proceso (sin usuario ni contraseña), puedes habilitar la autenticación integrada:
+
+## Configuración en `.env`:
+
+```
+DB_TYPE=sqlserver
+DB_HOST=localhost
+DB_NAME=NombreDeTuBase
+DB_PORT=1433
+DB_INSTANCE=SQLEXPRESS         # Opcional
+DB_TRUST_SERVER_CERTIFICATE=true
+DB_INTEGRATED_SECURITY=true    # <--- Habilita autenticación integrada
+```
+
+No incluyas `DB_USER` ni `DB_PASSWORD`.
+
+## Configuración por línea de comandos:
+
+```
+mcp-db-connect --sqlserver --host localhost --database NombreDeTuBase --port 1433 --integratedSecurity true --trustServerCertificate true
+```
+
+No incluyas los flags `--user` ni `--password`.
+
+## Notas:
+- El proceso debe ejecutarse con un usuario de Windows que tenga permisos en SQL Server.
+- Si usas una instancia nombrada, especifica `DB_INSTANCE` o `--instance`.
+- Si necesitas un dominio específico, puedes ajustar la variable de entorno `USERDOMAIN` antes de ejecutar el proceso.
+
+---
 
 
 
