@@ -370,6 +370,8 @@ if (dbType === 'mysql') {
   });
   const instance = getConfigValue('DB_INSTANCE', 'instance');
   if (integratedSecurity) {
+    // Permitir pasar el dominio por variable de entorno o argumento de línea de comandos
+    const domainValue = getConfigValue('DB_DOMAIN', 'domain', process.env.USERDOMAIN || '');
     connectionInfo = {
       server: hostValue,
       database: databaseValue,
@@ -381,7 +383,7 @@ if (dbType === 'mysql') {
       authentication: {
         type: 'ntlm',
         options: {
-          domain: process.env.USERDOMAIN || '',
+          domain: domainValue,
           userName: '', // Usar usuario actual
           password: ''  // Usar usuario actual
         }

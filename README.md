@@ -635,6 +635,7 @@ Esto asegura que todos los argumentos sean interpretados correctamente por tu sc
 
 Si deseas conectarte a SQL Server usando la cuenta de Windows que ejecuta el proceso (sin usuario ni contraseña), puedes habilitar la autenticación integrada:
 
+
 ## Configuración en `.env`:
 
 ```
@@ -645,6 +646,7 @@ DB_PORT=1433
 DB_INSTANCE=SQLEXPRESS         # Opcional
 DB_TRUST_SERVER_CERTIFICATE=true
 DB_INTEGRATED_SECURITY=true    # <--- Habilita autenticación integrada
+DB_DOMAIN=mydomain             # <--- (Opcional) Forzar dominio NTLM
 ```
 
 No incluyas `DB_USER` ni `DB_PASSWORD`.
@@ -652,7 +654,7 @@ No incluyas `DB_USER` ni `DB_PASSWORD`.
 ## Configuración por línea de comandos:
 
 ```
-mcp-db-connect --sqlserver --host localhost --database NombreDeTuBase --port 1433 --integratedSecurity true --trustServerCertificate true
+mcp-db-connect --sqlserver --host localhost --database NombreDeTuBase --port 1433 --integratedSecurity true --trustServerCertificate true --domain mydomain
 ```
 
 No incluyas los flags `--user` ni `--password`.
@@ -671,6 +673,7 @@ DB_PORT=1433
 DB_INSTANCE=SQLEXPRESS         # Opcional, si usas instancia nombrada
 DB_TRUST_SERVER_CERTIFICATE=true
 DB_INTEGRATED_SECURITY=true    # <--- Habilita autenticación integrada
+DB_DOMAIN=mydomai              # <--- (Opcional) Forzar dominio NTLM
 ```
 
 No incluyas `DB_USER` ni `DB_PASSWORD`.
@@ -686,7 +689,7 @@ No incluyas los flags `--user` ni `--password`.
 ### Notas importantes
 - El proceso debe ejecutarse con un usuario de Windows que tenga permisos en SQL Server.
 - Si usas una instancia nombrada, especifica `DB_INSTANCE` o `--instance`.
-- Si necesitas un dominio específico, puedes ajustar la variable de entorno `USERDOMAIN` antes de ejecutar el proceso.
+- Si necesitas un dominio específico, puedes usar la variable de entorno `DB_DOMAIN` o el argumento `--domain` para forzarlo.
 
 ---
 
