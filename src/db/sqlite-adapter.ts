@@ -1,8 +1,8 @@
-import sqlite3 from "sqlite3";
+import Database from "better-sqlite3";
 import { DbAdapter } from "./adapter.js";
 
 export class SqliteAdapter implements DbAdapter {
-  private db: sqlite3.Database | null = null;
+  private db: Database.Database | null = null;
   private dbPath: string;
 
   constructor(dbPath: string) {
@@ -10,52 +10,51 @@ export class SqliteAdapter implements DbAdapter {
   }
 
   async init(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.db = new sqlite3.Database(this.dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+    try {
+      this.db = new Database(this.dbPath, { fileMustExist: false });
+    } catch (err) {
+      throw err;
+    }
   }
 
   async all(query: string, params: any[] = []): Promise<any[]> {
     if (!this.db) throw new Error("Database not initialized");
-    return new Promise((resolve, reject) => {
-      this.db!.all(query, params, (err: Error | null, rows: any[]) => {
-        if (err) reject(err);
-        else resolve(rows);
-      });
-    });
+    try {
+      const stmt = this.db.prepare(query);
+      return stmt.all(...params);
+    } catch (err) {
+      throw err;
+    }
   }
 
   async run(query: string, params: any[] = []): Promise<{ changes: number, lastID: number }> {
     if (!this.db) throw new Error("Database not initialized");
-    return new Promise((resolve, reject) => {
-      this.db!.run(query, params, function(this: sqlite3.RunResult, err: Error | null) {
-        if (err) reject(err);
-        else resolve({ changes: this.changes, lastID: this.lastID });
-      });
-    });
+    try {
+      const stmt = this.db.prepare(query);
+      const info = stmt.run(...params);
+      return { changes: info.changes, lastID: Number(info.lastInsertRowid) };
+    } catch (err) {
+      throw err;
+    }
   }
 
   async exec(query: string): Promise<void> {
     if (!this.db) throw new Error("Database not initialized");
-    return new Promise((resolve, reject) => {
-      this.db!.exec(query, (err: Error | null) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
+    try {
+      this.db.exec(query);
+    } catch (err) {
+      throw err;
+    }
   }
 
   async close(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (!this.db) { resolve(); return; }
-      this.db.close((err: Error | null) => {
-        if (err) reject(err);
-        else { this.db = null; resolve(); }
-      });
-    });
+    if (!this.db) return;
+    try {
+      this.db.close();
+      this.db = null;
+    } catch (err) {
+      throw err;
+    }
   }
 
   getMetadata() {

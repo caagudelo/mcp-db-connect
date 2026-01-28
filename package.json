@@ -44,14 +44,14 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.11.1",
+    "@modelcontextprotocol/sdk": "^1.25.3",
+    "better-sqlite3": "^12.6.2",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "minimist": "^1.2.8",
-    "mssql": "^10.0.4",
+    "mssql": "^12.2.0",
     "mysql2": "^3.14.1",
     "pg": "^8.16.0",
-    "sqlite3": "^5.1.7",
     "zod": "^3.22.4"
   },
   "devDependencies": {
