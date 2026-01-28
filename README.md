@@ -6,7 +6,7 @@ Un **servidor MCP** (Model Context Protocol) es un software que actúa como inte
 
 - El servidor MCP se ejecuta en tu computadora o en un servidor remoto.
 - Recibe comandos o consultas desde una aplicación cliente (por ejemplo, Claude Desktop, un editor de código como Cursor o Visual Studio Code, o una API).
-- Procesa estos comandos, accediendo a la base de datos que tengas configurada (puede ser SQLite, SQL Server, PostgreSQL, MySQL, etc.).
+- Procesa estos comandos, accediendo a la base de datos que tengas configurada (puede ser SQL Server, PostgreSQL, MySQL, etc.).
 - Devuelve los resultados al cliente en un formato fácil de usar (como JSON o CSV).
 
 
@@ -34,12 +34,13 @@ A continuación, algunos recursos y enlaces oficiales para configurar MCP en los
 
 # mcp-db-connect
 
-Un servidor MCP (Model Context Protocol) que proporciona capacidades de acceso a bases de datos para Claude, soportando SQLite, SQL Server, PostgreSQL y MySQL.
+Un servidor MCP (Model Context Protocol) que proporciona capacidades de acceso a bases de datos para Claude, soportando SQL Server, PostgreSQL y MySQL.
+
+> **Nota:** El soporte para SQLite ha sido removido por restricciones de compatibilidad en entornos corporativos.
 
 ## Características
 
 - Soporte para múltiples motores de base de datos:
-  - SQLite
   - SQL Server
   - PostgreSQL
   - MySQL
@@ -97,7 +98,7 @@ La nueva versión incluye soporte completo para variables de entorno, lo que hac
    # Configuración de Base de Datos para mcp-db-connect
    # Copia este archivo como .env y configura tus valores
 
-   # Tipo de base de datos (mysql, sqlserver, postgresql, sqlite)
+   # Tipo de base de datos (mysql, sqlserver, postgresql)
    DB_TYPE=sqlserver
 
    # Configuración general de conexión
@@ -133,10 +134,6 @@ La nueva versión incluye soporte completo para variables de entorno, lo que hac
    # DB_PASSWORD=mi_contraseña
    # DB_PORT=5432
    # DB_SSL=false
-
-   # SQLite
-   # DB_TYPE=sqlite
-   # DB_PATH=/ruta/completa/a/mi_base.db
    ```
 
 3. **Edita el archivo `.env`** con tu configuración real
@@ -146,13 +143,12 @@ La nueva versión incluye soporte completo para variables de entorno, lo que hac
 
 | Variable | Descripción | Requerido | Ejemplo |
 |----------|-------------|-----------|---------|
-| `DB_TYPE` | Tipo de base de datos | ✅ | `mysql`, `sqlserver`, `postgresql`, `sqlite` |
-| `DB_HOST` | Host del servidor | ✅ (excepto SQLite) | `localhost`, `192.168.1.100` |
-| `DB_NAME` | Nombre de la base de datos | ✅ (excepto SQLite) | `test`, `production` |
-| `DB_USER` | Usuario de la base de datos | ✅ (excepto SQLite) | `root`, `sa`, `postgres` |
-| `DB_PASSWORD` | Contraseña de la base de datos | ✅ (excepto SQLite) | `mi_contraseña_segura` |
+| `DB_TYPE` | Tipo de base de datos | ✅ | `mysql`, `sqlserver`, `postgresql` |
+| `DB_HOST` | Host del servidor | ✅ | `localhost`, `192.168.1.100` |
+| `DB_NAME` | Nombre de la base de datos | ✅ | `test`, `production` |
+| `DB_USER` | Usuario de la base de datos | ✅ | `root`, `sa`, `postgres` |
+| `DB_PASSWORD` | Contraseña de la base de datos | ✅ | `mi_contraseña_segura` |
 | `DB_PORT` | Puerto de conexión | ❌ (usa valores por defecto) | `3306`, `1433`, `5432` |
-| `DB_PATH` | Ruta al archivo SQLite | ✅ (solo SQLite) | `/ruta/a/mi_base.db` |
 | `DB_INSTANCE` | Instancia de SQL Server | ❌ | `SQLEXPRESS`, `MSSQLSERVER` |
 | `DB_SSL` | Habilitar SSL | ❌ | `true`, `false` |
 | `DB_TRUST_SERVER_CERTIFICATE` | Trust server certificate (SQL Server) | ❌ | `true`, `false` |
@@ -194,12 +190,6 @@ DB_PORT=5432
 DB_SSL=true
 ```
 
-**SQLite:**
-```env
-DB_TYPE=sqlite
-DB_PATH=/ruta/completa/a/mi_base.db
-```
-
 ### Sistema de Argumentos de Línea de Comandos
 
 También puedes seguir usando argumentos de línea de comandos como antes:
@@ -211,13 +201,11 @@ También puedes seguir usando argumentos de línea de comandos como antes:
 | `--mysql` | Seleccionar MySQL | ✅ (uno de los tipos) | `--mysql` |
 | `--sqlserver` | Seleccionar SQL Server | ✅ (uno de los tipos) | `--sqlserver` |
 | `--postgresql` | Seleccionar PostgreSQL | ✅ (uno de los tipos) | `--postgresql` |
-| `--sqlite` | Seleccionar SQLite | ✅ (uno de los tipos) | `--sqlite` |
-| `--host` | Host del servidor | ✅ (excepto SQLite) | `--host localhost` |
-| `--database` | Nombre de la base de datos | ✅ (excepto SQLite) | `--database test` |
-| `--user` | Usuario de la base de datos | ✅ (excepto SQLite) | `--user root` |
-| `--password` | Contraseña de la base de datos | ✅ (excepto SQLite) | `--password "mi_clave"` |
+| `--host` | Host del servidor | ✅ | `--host localhost` |
+| `--database` | Nombre de la base de datos | ✅ | `--database test` |
+| `--user` | Usuario de la base de datos | ✅ | `--user root` |
+| `--password` | Contraseña de la base de datos | ✅ | `--password "mi_clave"` |
 | `--port` | Puerto de conexión | ❌ | `--port 3306` |
-| `--path` | Ruta al archivo SQLite | ✅ (solo SQLite) | `--path /ruta/a/base.db` |
 | `--instance` | Instancia de SQL Server | ❌ | `--instance SQLEXPRESS` |
 | `--ssl` | Habilitar SSL | ❌ | `--ssl true` |
 | `--trustServerCertificate` | Trust server certificate (SQL Server) | ❌ | `--trustServerCertificate true` |
@@ -238,11 +226,6 @@ node dist/index.js --sqlserver --host localhost --instance SQLEXPRESS --database
 **PostgreSQL:**
 ```bash
 node dist/index.js --postgresql --host localhost --database test --port 5432 --user postgres --password "miClave" --ssl true
-```
-
-**SQLite:**
-```bash
-node dist/index.js --sqlite --path /ruta/a/tu/base.db
 ```
 
 ### 🎯 Prioridad de Configuración
@@ -322,14 +305,6 @@ Si prefieres usar argumentos, aquí tienes ejemplos para cada tipo de base de da
         "--user", "<usuario>",
         "--password", "<contraseña>",
         "--ssl", "true"
-      ]
-    },
-    "sqlite": {
-      "command": "node",
-      "args": [
-        "/ruta/absoluta/a/mcp-db-connect/dist/index.js",
-        "--sqlite",
-        "--path", "/ruta/a/tu/base.db"
       ]
     }
   }
@@ -421,17 +396,6 @@ Si usas `npx` en la configuración del editor, asegúrate de incluir el argument
         "DB_PASSWORD": "mi_contraseña",
         "DB_PORT": "5432",
         "DB_SSL": "true"
-      }
-    },
-    "sqlitedev": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@cagudelo/mcp-db-connect"
-      ],
-      "env": {
-        "DB_TYPE": "sqlite",
-        "DB_PATH": "E:/Equipo/Documentos/GitHub/mcp-db-connect/test.db"
       }
     }
   }

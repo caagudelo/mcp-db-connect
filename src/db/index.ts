@@ -3,18 +3,10 @@ import { DbAdapter, createDbAdapter } from './adapter.js';
 
 let dbAdapter: DbAdapter | null = null;
 
-export async function initDatabase(connectionInfo: any, dbType: string = 'sqlite'): Promise<void> {
-  if (typeof connectionInfo === 'string') {
-    connectionInfo = { path: connectionInfo };
+export async function initDatabase(connectionInfo: any, dbType: string): Promise<void> {
+  if (dbType && dbType.toLowerCase() === 'sqlite') {
+    throw new Error('El soporte para SQLite ha sido removido. Usa MySQL, SQL Server o PostgreSQL.');
   }
-
-  // Validar la configuración antes de inicializar la base de datos
-/*  const validation = validateDatabaseConfig(connectionInfo);
-  if (!validation.isValid) {
-    console.log("Configuración inválida:\n" + validation.errors.join('\n'));
-    process.exit(1);
-  }*/
-
   dbAdapter = createDbAdapter(dbType, connectionInfo);
   await dbAdapter.init();
 }
