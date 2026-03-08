@@ -44,7 +44,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@cagudelo/mcp-db-connect": "^1.6.4",
     "@modelcontextprotocol/sdk": "^1.25.3",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",

@@ -111,7 +111,7 @@ try {
 const server = new Server(
   {
     name: "mcp-db-connect",
-    version: "1.1.0",
+    version: appVersion,
   },
   {
     capabilities: {

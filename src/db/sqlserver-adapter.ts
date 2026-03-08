@@ -51,7 +51,8 @@ export class SqlServerAdapter implements DbAdapter {
     params.forEach((param, index) => {
       request.input(`param${index}`, param);
     });
-    const preparedQuery = query.replace(/\?/g, (_, i) => `@param${i}`);
+    let paramIndex = 0;
+    const preparedQuery = query.replace(/\?/g, () => `@param${paramIndex++}`);
     const result = await request.query(preparedQuery);
     return result.recordset;
   }
@@ -62,7 +63,8 @@ export class SqlServerAdapter implements DbAdapter {
     params.forEach((param, index) => {
       request.input(`param${index}`, param);
     });
-    const preparedQuery = query.replace(/\?/g, (_, i) => `@param${i}`);
+    let paramIndex = 0;
+    const preparedQuery = query.replace(/\?/g, () => `@param${paramIndex++}`);
     const result = await request.query(preparedQuery);
     return { changes: result.rowsAffected[0] || 0, lastID: 0 };
   }

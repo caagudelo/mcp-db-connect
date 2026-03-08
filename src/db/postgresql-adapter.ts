@@ -37,14 +37,16 @@ export class PostgresqlAdapter implements DbAdapter {
 
   async all(query: string, params: any[] = []): Promise<any[]> {
     if (!this.client) throw new Error("Database not initialized");
-    const preparedQuery = query.replace(/\?/g, (_, i) => `$${i + 1}`);
+    let paramIndex = 0;
+    const preparedQuery = query.replace(/\?/g, () => `$${++paramIndex}`);
     const result = await this.client.query(preparedQuery, params);
     return result.rows;
   }
 
   async run(query: string, params: any[] = []): Promise<{ changes: number, lastID: number }> {
     if (!this.client) throw new Error("Database not initialized");
-    const preparedQuery = query.replace(/\?/g, (_, i) => `$${i + 1}`);
+    let paramIndex = 0;
+    const preparedQuery = query.replace(/\?/g, () => `$${++paramIndex}`);
     let lastID = 0;
     let changes = 0;
     if (query.trim().toUpperCase().startsWith('INSERT')) {

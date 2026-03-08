@@ -13,6 +13,7 @@ import { initDatabase, getDatabaseMetadata } from "./db/index.js";
 import { registerAllTools } from "./tools/index.js";
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
 // Cargar variables de entorno desde archivo .env
@@ -293,9 +294,19 @@ for (const field of requiredFields) {
 // Create a new SSEServerTransport instance
 let transport: SSEServerTransport;
 
+// Obtener la versión desde package.json
+const packageJsonPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'package.json');
+let appVersion = 'desconocida';
+try {
+  const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  appVersion = pkg.version;
+} catch (e) {
+  // Si falla, deja la versión como 'desconocida'
+}
+
 const server = new McpServer({
   name: "mcp-db-connect-sse",
-  version: "1.0.0",
+  version: appVersion,
 });
 
 // Registrar todas las herramientas MCP

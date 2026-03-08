@@ -77,28 +77,6 @@ export function isModificationQuery(query: string): boolean {
 }
 
 /**
- * Obtiene la consulta SQL para listar todas las tablas
- * @returns {string} Consulta SQL para listar tablas
- */
-export function getListTablesQuery(): string {
-  return `
-    SELECT name 
-    FROM sqlite_master 
-    WHERE type='table' 
-    AND name NOT LIKE 'sqlite_%'
-  `;
-}
-
-/**
- * Obtiene la consulta SQL para describir una tabla
- * @param {string} tableName - Nombre de la tabla
- * @returns {string} Consulta SQL para describir la tabla
- */
-export function getDescribeTableQuery(tableName: string): string {
-  return `PRAGMA table_info("${tableName}")`;
-}
-
-/**
  * Formatea un error para su presentación
  * @param {Error} error - El error a formatear
  * @returns {string} Mensaje de error formateado

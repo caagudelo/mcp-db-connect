@@ -1,6 +1,35 @@
 import { z } from "zod";
 import { tool } from "../types/index.js";
-import { dbRun, dbAll } from "../db/index.js";
+import { dbRun, dbAll, getDatabaseMetadata } from "../db/index.js";
+
+/**
+ * Genera el DDL de CREATE TABLE para mcp_insights según el motor de BD
+ */
+function getCreateInsightsTableQuery(dbType: string): string {
+  switch (dbType) {
+    case 'sqlserver':
+      return `IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'mcp_insights')
+        CREATE TABLE mcp_insights (
+          id INT IDENTITY(1,1) PRIMARY KEY,
+          insight NVARCHAR(MAX) NOT NULL,
+          created_at DATETIME DEFAULT GETDATE()
+        )`;
+    case 'mysql':
+      return `CREATE TABLE IF NOT EXISTS mcp_insights (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          insight TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`;
+    case 'postgresql':
+      return `CREATE TABLE IF NOT EXISTS mcp_insights (
+          id SERIAL PRIMARY KEY,
+          insight TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`;
+    default:
+      throw new Error(`Motor de base de datos no soportado para insights: ${dbType}`);
+  }
+}
 
 // Herramienta: append_insight - Para agregar insights de negocio
 const appendInsight: tool<{
@@ -13,13 +42,8 @@ const appendInsight: tool<{
   },
   handler: async ({ insight }) => {
     try {
-      await dbRun(`
-        CREATE TABLE IF NOT EXISTS mcp_insights (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          insight TEXT NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+      const metadata = getDatabaseMetadata();
+      await dbRun(getCreateInsightsTableQuery(metadata.type));
       
       await dbRun(
         "INSERT INTO mcp_insights (insight) VALUES (?)",
